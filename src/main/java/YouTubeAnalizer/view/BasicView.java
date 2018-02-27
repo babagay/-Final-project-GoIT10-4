@@ -19,28 +19,25 @@ public class BasicView implements View
     private StateManager stateManager;
 
     private final VBox controls = new VBox(15);
-    private Button button;
+
+    Button helloButton;
 
     @Override
     public void init() {
-        Label label = new Label("Hello JavaFX World!");
 
-        button = new Button();
-        button.setOnAction(e -> label.setText("Hello JavaFX Universe!"));
 
-        Button helloButton = new Button();
-        helloButton.setText( "play" );
+        helloButton = new Button();
+        helloButton.setText( "Button" );
         helloButton.setOnAction( e ->
-        {
-            System.out.println("Button pressed");
-        } );
+                System.out.println("Button pressed") );
 
 
         controls.getChildren().addAll(helloButton);
         controls.setAlignment( Pos.CENTER);
 
         stateManager.setPersistenceMode(StateManager.PersistenceMode.USER);
-        addUser(stateManager.getProperty("UserName").orElse("").toString());
+
+//        addUser(stateManager.getProperty("UserName").orElse("").toString());
     }
 
     @Override
@@ -48,8 +45,11 @@ public class BasicView implements View
         return controls;
     }
 
+    /**
+     * [!] Just example
+     */
     public void addUser(String userName) {
-        button.setText(userName.isEmpty() ? "Change the World!" : userName + ", change the World!");
+        helloButton.setText(userName.isEmpty() ? "Change the World!" : userName + ", change the World!");
 
         stateManager.setProperty("UserName", userName);
     }

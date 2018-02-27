@@ -29,14 +29,17 @@ public class MenuActions {
     @ActionProxy(text="About")
     private void about() {
         Alert alert = new Alert( Alert.AlertType.INFORMATION);
-        alert.setTitle("Gluon Desktop");
-        alert.setHeaderText("About Gluon Desktop");
-        alert.setGraphic(new ImageView(new Image(MenuActions.class.getResource("/icon.png").toExternalForm(), 48, 48, true, true)));
-        alert.setContentText("This is a basic Gluon Desktop Application");
+        alert.setTitle("Desktop App");
+        alert.setHeaderText("About App");
+        //alert.setGraphic(new ImageView(new Image(MenuActions.class.getResource("/icon.png").toExternalForm(), 48, 48, true, true)));
+        alert.setContentText("This is a basic Desktop Application");
         alert.showAndWait();
 
     }
 
+    /**
+     * [!] Just example
+     */
     @ActionProxy(text="Sign In")
     private void signin() {
         TextInputDialog input = new TextInputDialog(stateManager.getProperty("UserName").orElse("").toString());
