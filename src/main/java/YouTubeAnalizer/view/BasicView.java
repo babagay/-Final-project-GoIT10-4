@@ -6,7 +6,6 @@ import com.gluonhq.particle.view.View;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
@@ -26,6 +25,7 @@ public class BasicView implements View
     public void init() {
 
 
+        // test btn
         helloButton = new Button();
         helloButton.setText( "Button" );
         helloButton.setOnAction( e ->
@@ -37,7 +37,7 @@ public class BasicView implements View
 
         stateManager.setPersistenceMode(StateManager.PersistenceMode.USER);
 
-//        addUser(stateManager.getProperty("UserName").orElse("").toString());
+        addFilePath(stateManager.getProperty("CacheFilePath").orElse("").toString());
     }
 
     @Override
@@ -48,10 +48,10 @@ public class BasicView implements View
     /**
      * [!] Just example
      */
-    public void addUser(String userName) {
-        helloButton.setText(userName.isEmpty() ? "Change the World!" : userName + ", change the World!");
+    public void addFilePath(String cacheFilePath) {
+        helloButton.setText(cacheFilePath.isEmpty() ? "..." : cacheFilePath);
 
-        stateManager.setProperty("UserName", userName);
+        stateManager.setProperty("CacheFilePath", cacheFilePath);
     }
 
 }

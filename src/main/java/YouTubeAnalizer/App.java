@@ -3,6 +3,8 @@ package YouTubeAnalizer;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
 import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
+import org.controlsfx.control.NotificationPane;
 
 import java.lang.reflect.Field;
 
@@ -21,9 +23,9 @@ public class App extends ParticleApplication
     @Override
     public void postInit(Scene scene)
     {
-        getApp().buildMenu( "File -> [signin,---, exit]", "Help -> [about]" );
+        getApp().buildMenu( "File -> [settings,---, exit]", "Help -> [about]" );
 
-        getApp().getToolBarActions().addAll( actions( "signin" ) );
+        getApp().getToolBarActions().addAll( actions( "settings" ) );
     }
 
     /**
@@ -47,7 +49,7 @@ public class App extends ParticleApplication
 
         try
         {
-            notificationPaneField.set( particle, null );
+            notificationPaneField.set( particle,  new NotificationPane() );
         }
         catch ( IllegalAccessException e )
         {

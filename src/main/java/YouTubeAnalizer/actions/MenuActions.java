@@ -6,8 +6,6 @@ import com.gluonhq.particle.application.ParticleApplication;
 import com.gluonhq.particle.state.StateManager;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import org.controlsfx.control.action.ActionProxy;
 
 import javax.inject.Inject;
@@ -40,17 +38,17 @@ public class MenuActions {
     /**
      * [!] Just example
      */
-    @ActionProxy(text="Sign In")
-    private void signin() {
-        TextInputDialog input = new TextInputDialog(stateManager.getProperty("UserName").orElse("").toString());
-        input.setTitle("User name");
+    @ActionProxy(text="Settings")
+    private void settings() {
+        TextInputDialog input = new TextInputDialog(stateManager.getProperty("CacheFilePath").orElse("").toString());
+        input.setTitle("Path");
         input.setHeaderText(null);
-        input.setContentText("Input your name:");
+        input.setContentText("Input file path:");
         input
                 .showAndWait()
                 .ifPresent(user -> {
                     BasicView homeView = (BasicView) app.getParticle().getViewManager().getCurrentView();
-                    homeView.addUser(user);
+                    homeView.addFilePath(user);
                 });
     }
 
