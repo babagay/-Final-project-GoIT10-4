@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Final project.iml" filepath="$PROJECT_DIR$/Final project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Final-project-GoIT.iml" filepath="$PROJECT_DIR$/.idea/modules/Final-project-GoIT.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FinalProject.iml" filepath="$PROJECT_DIR$/.idea/modules/FinalProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FinalProject_main.iml" filepath="$PROJECT_DIR$/.idea/modules/FinalProject_main.iml" group="FinalProject" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FinalProject_test.iml" filepath="$PROJECT_DIR$/.idea/modules/FinalProject_test.iml" group="FinalProject" />
