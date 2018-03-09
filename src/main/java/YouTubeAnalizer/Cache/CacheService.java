@@ -8,6 +8,7 @@ import io.reactivex.subjects.AsyncSubject;
 
 
 import javax.security.auth.Subject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -25,13 +26,23 @@ public enum CacheService {
     {
         return CacheService.valueOf( "CACHE_SERVICE" );
     }
-    
+
+    /**
+     * todo
+     */
+    public final static ArrayList<Channel> get (String key) throws Exception
+    {
+        return null;
+    }
+
+
     /**
      * Поискать в L1
      * если нет, поискать в L2. Если есть, создать ноду, добавить в сторадж и вернуть её.
      * если в L2 тоже нет, вернуть null
+     * Возвращать можно массив или список вместо ноды
      */
-    public final static Node get (String key) throws Exception
+    public final static Node getNode (String key) throws Exception
     {
         CacheService cacheService = getInstance();
     
@@ -44,21 +55,33 @@ public enum CacheService {
                            .orElseGet( () ->
                                                cacheService.fetchChannelsFromL2andCreateNode( finalKey ) );
     }
-    
+
     /**
-     * Закешировать канал
-     * перезаписать объекты, в т.ч. обновить время протухания
-     * можно в отдельном потоке
-     * сохранить объект в L2
-     * сформировать ноду и сохранить её в L1
+     * todo
+     */
+    public final static void set(String request, Channel ... channels)
+    {
+
+    }
+
+    /**
+     * Закешировать объект канала
      */
     public final static void set(Channel ... channels)
     {
-    
-        AsyncSubject.fromArray(channels).subscribeOn( Schedulers.computation() )
+            AsyncSubject.fromArray(channels).subscribeOn( Schedulers.computation() )
         .subscribe(
                 c -> {
-                    System.out.println(c.channelId);
+                    //System.out.println(c.channelId);
+
+                    // найти объект с заданным channelId в L2. Если он есть, это обновление. Если нет - добавление.
+
+                    // Добавление: Обновить время протухания канала. положить в L2. Создать ноду, обновить время протухания. положить ноду в L1.
+
+                    // Обновление: Взять все ноды, в которые входит данный channelId.
+                    //             Удалить канал channelId из кеша L2.
+                    //             Выполнить добавление в L2.
+                    //             На каждом айтеме ранее полученного списка нод, выполнить рефреш (восстановить ссылки на каналы, проверить их время протухания, пересчитать время протухания ноды.)
                 },
                 e -> {
                     //System.out.println(e.getMessage());
@@ -121,7 +144,7 @@ public enum CacheService {
      * разогрев кеша
      * в отделном потоке
      */
-    void initStorage(){
+    public final static void initStorage(){
     
         Storage.getInstance().initLevel2();
         Storage.getInstance().initLevel1();
@@ -130,8 +153,14 @@ public enum CacheService {
     /**
      * сбросить на диск
      */
-    void saveStorage()
+    public final static void saveStorage()
     {
     
+    }
+
+    /**
+     * Должны сохраняться при запуске
+     */
+    private static class Settings {
     }
 }

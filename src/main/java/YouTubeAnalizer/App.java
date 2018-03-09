@@ -28,6 +28,8 @@ public class App extends ParticleApplication
         CacheService.set( c1,c2, c3 );
     
         int t = 0;
+
+        CacheService.initStorage();
     }
 
     @Override

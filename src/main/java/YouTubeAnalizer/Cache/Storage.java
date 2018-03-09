@@ -35,6 +35,7 @@ final public class Storage {
     Set<String> requests;
     
     /**
+     * кеш L2
      * список каналов
      * сохраняется на диск
      */
