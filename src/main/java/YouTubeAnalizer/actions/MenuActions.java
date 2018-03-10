@@ -1,5 +1,6 @@
 package YouTubeAnalizer.actions;
 
+import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.view.BasicView;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.application.ParticleApplication;
@@ -21,6 +22,7 @@ public class MenuActions {
 
     @ActionProxy(text="Exit", accelerator="alt+F4")
     private void exit() {
+        CacheService.saveStorage();
         app.exit();
     }
 

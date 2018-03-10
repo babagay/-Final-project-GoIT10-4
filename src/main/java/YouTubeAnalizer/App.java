@@ -1,11 +1,10 @@
 package YouTubeAnalizer;
 
 import YouTubeAnalizer.Cache.CacheService;
-import YouTubeAnalizer.Entity.Channel;
+import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import org.controlsfx.control.NotificationPane;
 
 import java.lang.reflect.Field;
@@ -14,20 +13,15 @@ import static org.controlsfx.control.action.ActionMap.actions;
 
 public class App extends ParticleApplication
 {
+    private static SettingsService settingsService = SettingsService.getInstance();
 
     public App()
     {
         super( "YouTube Analyzer" );
         
         disableNotificationPane();
-    
-        Channel c1 = new Channel( "a", 1 );
-        Channel c2 = new Channel( "b", 1 );
-        Channel c3 = new Channel( "c", 1 );
-        
-        CacheService.set( c1,c2, c3 );
-    
-        int t = 0;
+
+        settingsService.initSettings();
 
         CacheService.initStorage();
     }

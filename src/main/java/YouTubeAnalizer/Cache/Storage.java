@@ -2,7 +2,12 @@ package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 final public class Storage {
     
@@ -15,6 +20,9 @@ final public class Storage {
     {
         if ( nodes == null )
             nodes = Collections.synchronizedSortedSet( new TreeSet() );
+
+        if ( channels == null )
+            channels =  Collections.synchronizedSortedSet( new TreeSet() );
     }
     
     public static Storage getInstance()
@@ -39,7 +47,7 @@ final public class Storage {
      * список каналов
      * сохраняется на диск
      */
-    Set<Channel> channels;
+    SortedSet<Channel> channels;
     
     /**
      * поднять хранилище L1
@@ -55,5 +63,42 @@ final public class Storage {
      */
     void initLevel2(){
     
+    }
+
+    // todo
+    void clean()
+    {
+
+    }
+
+    /**
+     * Найти канал в L2 кеше
+     */
+    static Channel getChannelById(String channelId)
+    {
+        return Storage.getInstance().channels.stream().filter( channel -> channel.channelId.equals( channelId ) ).findFirst().orElse( null );
+    }
+
+    /**
+     * Взять все ноды, которые содержат канал с заданным id (названием)
+     */
+    static ArrayList<Node> getNodesByChannel(Channel channel)
+    {
+        return (ArrayList<Node>) getInstance().nodes.stream().filter( node -> node.containsChannel( channel ) ).collect( Collectors.toList() );
+    }
+
+    void putNode(Node node)
+    {
+        nodes.add( node );
+    }
+
+    void putChannel(Channel channel)
+    {
+        channels.add( channel );
+    }
+
+    void removeChannel(Channel channel)
+    {
+        channels.removeIf( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) );
     }
 }

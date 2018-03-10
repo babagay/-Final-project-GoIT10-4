@@ -38,7 +38,7 @@ public class Channel {
     Set<Video> videos;
 
     /**
-     * Время протухания. Для свежего объекта должно быть больще текущего значения
+     * Время протухания, сек.
      */
     int expirationDate;
     
@@ -46,5 +46,83 @@ public class Channel {
     {
         this.channelId = channelId;
         this.expirationDate = expirationDate;
+    }
+
+    public LocalDateTime getCreationDate()
+    {
+        return creationDate;
+    }
+
+    public int getFollowersNumber()
+    {
+        return followersNumber;
+    }
+
+    public int getVideosNumber()
+    {
+        return videosNumber;
+    }
+
+    public int getTotalViewsNumber()
+    {
+        return totalViewsNumber;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getChannelId()
+    {
+        return channelId;
+    }
+
+    public Set<Video> getVideos()
+    {
+        return videos;
+    }
+
+    public int getExpirationDate()
+    {
+        return expirationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate)
+    {
+        this.creationDate = creationDate;
+    }
+
+    public void setFollowersNumber(int followersNumber)
+    {
+        this.followersNumber = followersNumber;
+    }
+
+    public void setVideosNumber(int videosNumber)
+    {
+        this.videosNumber = videosNumber;
+    }
+
+    public void setTotalViewsNumber(int totalViewsNumber)
+    {
+        this.totalViewsNumber = totalViewsNumber;
+    }
+
+    public void setVideos(Set<Video> videos)
+    {
+        this.videos = videos;
+    }
+
+    public void setExpirationDate(int expirationDate)
+    {
+        this.expirationDate = expirationDate;
+    }
+
+    /**
+     * true, если текущее время меньше expirationDate
+     */
+    public boolean isFresh()
+    {
+        return expirationDate > (int) System.currentTimeMillis()/1000;
     }
 }
