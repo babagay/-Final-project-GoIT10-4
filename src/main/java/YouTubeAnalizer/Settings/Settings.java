@@ -14,7 +14,7 @@ public final class Settings {
     private int expirationTime;
 
     /**
-     *  использовать ли кеш
+     * использовать ли кеш
      */
     @SerializedName ("useCache")
     private boolean useCache;
@@ -38,7 +38,10 @@ public final class Settings {
         showRequestDuration = false;
         cacheDirectoryPath = "";
     }
-
+    
+    /**
+     * Exp time shift in seconds
+     */
     public int getExpirationTime()
     {
         return expirationTime;

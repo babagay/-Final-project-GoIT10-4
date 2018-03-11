@@ -50,6 +50,7 @@ final public class Storage {
     SortedSet<Channel> channels;
     
     /**
+     * todo
      * поднять хранилище L1
      * восстановить список нод по списку requests
      */
@@ -58,17 +59,12 @@ final public class Storage {
     }
     
     /**
+     * todo
      * поднять хранилище L2
      * восстановить список каналов
      */
     void initLevel2(){
     
-    }
-
-    // todo
-    void clean()
-    {
-
     }
 
     /**
@@ -86,15 +82,75 @@ final public class Storage {
     {
         return (ArrayList<Node>) getInstance().nodes.stream().filter( node -> node.containsChannel( channel ) ).collect( Collectors.toList() );
     }
-
+  
+    /**
+     * удалить ноды с флагом isDead = true
+     */
+    void clean()
+    {
+        nodes.parallelStream().filter( Node::isDead ).forEach( Storage.getInstance()::removeNode );
+    }
+    
+    boolean isNodePresentedInCache(Node node)
+    {
+        Node n = nodes.stream().filter( node1 -> node1.request.equals( node.request ) ).findFirst().orElse( null );
+        
+        return n != null;
+    }
+    
+    boolean isRequestCached(String request)
+    {
+        String req = requests.stream().filter( r -> r.equals( request ) ).findFirst().orElse( null );
+        
+        return req != null;
+    }
+    
+    boolean isChannelCached(Channel channel)
+    {
+        Channel
+                c =
+                channels.stream()
+                        .filter( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) )
+                        .findFirst()
+                        .orElse( null );
+        return c != null;
+    }
+    
+    // проверить, нет лли уже этой ноды
+    // добавить реквест в requests
     void putNode(Node node)
     {
-        nodes.add( node );
+        if ( !isNodePresentedInCache( node ) ) {
+            nodes.add( node );
+            
+            if ( !isRequestCached( node.request ) )
+                requests.add( node.request );
+        }
     }
-
+ 
+    /**
+     * Добавить канал, если канала с таким id нет в кеше
+     */
     void putChannel(Channel channel)
     {
+        if ( !isChannelCached( channel ) )
         channels.add( channel );
+    }
+    
+    // удалить из коллекции
+    // удалить из реквестов
+    void removeNode(Node node)
+    {
+        nodes.removeIf( node1 -> node1.request.equals( node.request ) );
+        String
+                request =
+                requests.parallelStream()
+                        .filter( request1 -> request1.equals( node.request ) )
+                        .findFirst()
+                        .orElseGet( null );
+        
+        if ( request != null )
+        requests.remove( request );
     }
 
     void removeChannel(Channel channel)

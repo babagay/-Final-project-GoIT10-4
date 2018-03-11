@@ -5,18 +5,26 @@ import YouTubeAnalizer.Settings.SettingsService;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.AsyncSubject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * [?] надо ли периодически проверять кэш и удалять устаревшие ноды
+ *
+ * Во время разогрева кеша ставится флаг
+ * Если в это время вызывается set(), все нод помещаются во временный стек
+ * И запускается процесс через FutureTask, который смотрит: ifCacheWarmingUp
+ * И по окончании разогрева очередь процессится в отдельном потоке
+ * Или прикрутить lock на запись (ТыПРогер)
+ * [] добавить задержку для эмуляции разогрева
+ * [] при добавлении проверять, нет ли уже такого запроса в кеше
+ * [] сбрасывать на диск только Storage
+ *
  * todo
- * когда запрашиваем ноду, проверяем, чтобы она была свежая и не мертвая
+ * Сбрасывать на диск
+ * Очередь запрососв на кеширование в момент разогрева
  */
 public enum CacheService
 {
-
     CACHE_SERVICE;
 
     CacheService()
@@ -72,66 +80,91 @@ public enum CacheService
             return channels;
         }
     }
-
+    
     /**
-     * todo
+     * Наиболее общий вариант кеширования запроса
      */
-    public final static void set(String request, Channel... channels)
+    public final static void set (String request, Channel... channels)
     {
-
+        set( channels );
+    
+        Node node = Node.getFactory().get( request, channels );
+    
+        Storage.getInstance().putNode( node );
     }
 
     /**
-     * todo
-     * Закешировать объект канала
+     * Закешировать объект[ы] канала
      */
     public final static void set(Channel... channels)
     {
         AsyncSubject.fromArray( channels ).subscribeOn( Schedulers.computation() )
                 .subscribe(
                         channelToStore -> {
-                            //System.out.println(c.channelId);
 
                             // найти объект с заданным channelId в L2. Если он есть, это обновление. Если нет - добавление.
                             Channel channel = Storage.getChannelById( channelToStore.channelId );
 
                             if ( channel != null )
                             {
-                                // Обновление: Взять все ноды, в которые входит данный channelId.
+                                // Взять все ноды, в которые входит данный channelId.
                                 ArrayList<Node> connectedNodes = Storage.getNodesByChannel( channel );
-                                //             Удалить канал channelId из кеша L2.
+                                
+                                // Удалить канал channelId из кеша L2.
                                 Storage.getInstance().removeChannel( channel );
 
-                                channel.setExpirationDate( (int) System.currentTimeMillis() / 1000 + SettingsService.getInstance().getSettings().getExpirationTime() );
+                                channel.setExpirationDate( generateExpirationTime() );
 
-                                //             Выполнить добавление в L2.
+                                // Выполнить добавление в L2.
                                 Storage.getInstance().putChannel( channel );
 
                                 connectedNodes.stream().forEach( node -> node.refresh() );
 
-                                // если после рефреша есть мертвые ноды, их надо удалить
+                                // если после рефреша появились мертвые ноды, их надо удалить
                                 Storage.getInstance().clean();
                             }
                             else
                             {
-                                // todo
-                                // Добавление: Обновить время протухания канала. положить в L2. Создать ноду, обновить время протухания. положить ноду в L1.
+                                // Обновить время протухания канала.
+                                channelToStore.setExpirationDate( generateExpirationTime() );
+                                
+                                // положить в L2.
+                                Storage.getInstance().putChannel( channelToStore );
+                                
+                                // Создать ноду, обновить время протухания.
+                                Node node = new Node( channelToStore.channelId, Node.getFactory().generateChannelSet(channelToStore) );
+                                node.recalcExpirationDate();
+                                
+                                // положить ноду в L1.
+                                Storage.getInstance().putNode( node );
                             }
-
-
                         },
                         e -> {
                             // System.out.println(e.getMessage());
                         },
-                        () -> { // complete
+                        () -> {
+                            // complete
                         }
                 );
+    }
+    
+    /**
+     * Время протухания от текущего момента
+     */
+    private static int generateExpirationTime()
+    {
+        int delta = SettingsService.getInstance().getSettings().getExpirationTime();
+        
+        int now = (int) System.currentTimeMillis()/1000;
+        
+        return now + delta;
     }
 
     Optional<Node> fetchNodeFromCacheL1(String key)
     {
         return Storage.getInstance().nodes.stream()
                 .filter( node -> node.request.equals( key ) )
+                .filter( Node::isRelevant )
                 .findFirst();
     }
 
@@ -171,6 +204,7 @@ public enum CacheService
     }
 
     /**
+     * todo
      * отвалидировать ключ
      */
     private boolean isKeyValid(String key)

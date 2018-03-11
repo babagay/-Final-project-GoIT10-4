@@ -2,14 +2,10 @@ package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Node
 {
-
     /**
      * "ChannelFoo,ChannelBar"
      */
@@ -20,12 +16,17 @@ public class Node
     ArrayList<String> channelNames;
 
     boolean isDead;
-
+    
+    private static Factory factory = new Factory();
+    
+    /**
+     * Время в секундах
+     */
     int expirationDate = 0;
 
     public Node()
     {
-        channelNames = new ArrayList<>( 2 );
+        resetChannelNames();
         resetChannels();
         request = "";
         isDead = false;
@@ -37,8 +38,13 @@ public class Node
         setRequest( request );
         setChannels( channels );
     }
-
-    public void setRequest(String request)
+    
+    public static Factory getFactory ()
+    {
+        return factory;
+    }
+    
+    public void setRequest (String request)
     {
         this.request = request;
     }
@@ -56,8 +62,16 @@ public class Node
     public void setChannels(Set<Channel> channels)
     {
         this.channels = channels;
-        channels.stream().forEach( channel -> channelNames.add( channel.getChannelId() ) );
+        
+        setChannelNames( channels );
+        
         recalcExpirationDate();
+    }
+    
+    void setChannelNames(Set<Channel> channels)
+    {
+        resetChannelNames();
+        channels.stream().forEach( channel -> channelNames.add( channel.getChannelId() ) );
     }
 
     void addChannel(Channel channel)
@@ -74,7 +88,22 @@ public class Node
     {
         return channels.stream().anyMatch( channel1 -> channel1.channelId.equals( channel.channelId ) );
     }
+    
+    boolean isDead()
+    {
+        return isDead == true;
+    }
+    
+    boolean isExpired()
+    {
+        return expirationDate <= (int) System.currentTimeMillis()/1000;
+    }
 
+    boolean isRelevant()
+    {
+        return !isDead() &&  !isExpired();
+    }
+    
     /**
      * восстановить ссылки на каналы, проверить их время протухания, пересчитать время протухания ноды
      */
@@ -82,6 +111,7 @@ public class Node
     {
         resetChannels();
         channelNames.stream().map( Storage::getChannelById ).filter( Channel::isFresh ).forEach( this::addChannel );
+        // todo сбросить requests и засетить
 
         if ( channels.size() < channelNames.size() )
         {
@@ -97,13 +127,36 @@ public class Node
     {
         channels = new TreeSet<>();
     }
+    
+    private void resetChannelNames()
+    {
+        channelNames = new ArrayList<>( 2 );
+    }
 
     /**
      * Выставить ExpirationDate в соответствии с минимальным ExpirationDate среди всех каналов
      */
-    private void recalcExpirationDate()
+    void recalcExpirationDate()
     {
         expirationDate = channels.stream().min( Comparator.comparingInt( Channel::getExpirationDate ) ).get().getExpirationDate();
+    }
+    
+    static class Factory {
+        
+        Node get(String request, Channel... channels)
+        {
+            TreeSet<Channel> channelSet = generateChannelSet( channels );
+            Node node = new Node( request, channelSet );
+            node.setChannelNames( channelSet );
+            node.refresh();
+            
+            return node;
+        }
+        
+        TreeSet<Channel> generateChannelSet(Channel... channels)
+        {
+            return Arrays.stream( channels ).collect( TreeSet<Channel>::new, TreeSet::add, TreeSet::addAll );
+        }
     }
 
 }
