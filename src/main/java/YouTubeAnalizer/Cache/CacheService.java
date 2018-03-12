@@ -6,30 +6,32 @@ import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.AsyncSubject;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * [?] надо ли периодически проверять кэш и удалять устаревшие ноды
+ * [issues]
  *
- * Во время разогрева кеша ставится флаг
+ * [!] Во время разогрева кеша ставится флаг
  * Если в это время вызывается set(), все нод помещаются во временный стек
  * И запускается процесс через FutureTask, который смотрит: ifCacheWarmingUp
  * И по окончании разогрева очередь процессится в отдельном потоке
  * Или прикрутить lock на запись (ТыПРогер)
- * [] добавить задержку для эмуляции разогрева
- * [] при добавлении проверять, нет ли уже такого запроса в кеше
- * [] сбрасывать на диск только Storage
+ * [!] добавить задержку для эмуляции разогрева
  *
- * todo
- * Сбрасывать на диск
- * Очередь запрососв на кеширование в момент разогрева
+ * [!] ConcurrentMap - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
  */
 public enum CacheService
 {
     CACHE_SERVICE;
 
+    private CountDownLatch channelSetLatch;
+
+    private AtomicBoolean isWarmingUp;
+
     CacheService()
     {
-
+        isWarmingUp.set( false );
     }
 
     private final static CacheService getInstance()
@@ -37,11 +39,18 @@ public enum CacheService
         return CacheService.valueOf( "CACHE_SERVICE" );
     }
 
+
+//    public void setWarmingIsFinished()
+//    {
+//        getInstance().isWarmingUp.set( false );
+//    }
+
     /**
      * Поискать в L1
      * если нет, поискать в L2. Если есть, создать ноду, добавить в сторадж и вернуть её.
      * если в L2 тоже нет, вернуть null
      * Возвращать можно массив или список вместо ноды
+     * todo если каналы, входящие в ноду, просрочены, нужно запустить рефреш кэша
      */
     public final static Node getNode(String key) throws Exception
     {
@@ -69,34 +78,56 @@ public enum CacheService
 
         try
         {
-            channels = getNode( key ).channels;
+            channels = getNode( trimRequest( key ) ).channels;
         }
         catch ( Exception e )
         {
-            e.printStackTrace();
+            // e.printStackTrace();
+            // getNode( key ) м.б. null
         }
         finally
         {
             return channels;
         }
     }
-    
+
     /**
-     * Наиболее общий вариант кеширования запроса
+     * Обёртка для set(Channel... channels).
+     * Наиболее общий вариант кеширования запроса.
+     * todo если в данный момент идет разогрев, положить запрос на модификацию в потокобезопасную очередь, которую обработать после разогрева
      */
-    public final static void set (String request, Channel... channels)
+    public final static void set(String request, Channel... channels)
     {
-        set( channels );
-    
-        Node node = Node.getFactory().get( request, channels );
-    
-        Storage.getInstance().putNode( node );
+        if ( CacheService.getInstance().isWarmingUpNow() )
+        {
+            // todo
+            // put to the Queue либо запустить в отдельном потоке отложенное добавление
+        }
+        else
+        {
+            getInstance().channelSetLatch = new CountDownLatch( channels.length );
+
+            set( channels );
+
+            try
+            {
+                getInstance().channelSetLatch.await();
+            }
+            catch ( InterruptedException e )
+            {
+                e.printStackTrace();
+            }
+
+            Node node = Node.getFactory().create( trimRequest( request ), channels );
+
+            Storage.getInstance().putNode( node );
+        }
     }
 
     /**
      * Закешировать объект[ы] канала
      */
-    public final static void set(Channel... channels)
+    private final static void set(Channel... channels)
     {
         AsyncSubject.fromArray( channels ).subscribeOn( Schedulers.computation() )
                 .subscribe(
@@ -121,13 +152,13 @@ public enum CacheService
                                 connectedNodes.stream().forEach( node -> node.refresh() );
 
                                 // если после рефреша появились мертвые ноды, их надо удалить
-                                Storage.getInstance().clean();
+                                Storage.getInstance().cleanL1();
                             }
                             else
                             {
                                 // Обновить время протухания канала.
                                 channelToStore.setExpirationDate( generateExpirationTime() );
-                                
+
                                 // положить в L2.
                                 Storage.getInstance().putChannel( channelToStore );
                                 
@@ -138,12 +169,14 @@ public enum CacheService
                                 // положить ноду в L1.
                                 Storage.getInstance().putNode( node );
                             }
+
+                            getInstance().channelSetLatch.countDown();
                         },
                         e -> {
                             // System.out.println(e.getMessage());
                         },
                         () -> {
-                            // complete
+                            // System.out.println("complete");
                         }
                 );
     }
@@ -151,11 +184,11 @@ public enum CacheService
     /**
      * Время протухания от текущего момента
      */
-    private static int generateExpirationTime()
+    private static long generateExpirationTime()
     {
-        int delta = SettingsService.getInstance().getSettings().getExpirationTime();
-        
-        int now = (int) System.currentTimeMillis()/1000;
+        long delta = SettingsService.getInstance().getSettings().getExpirationTime();
+
+        long now = System.currentTimeMillis() / 1000;
         
         return now + delta;
     }
@@ -203,6 +236,52 @@ public enum CacheService
         return key;
     }
 
+//       System.out.println("__Hauhtd");
+//
+//        Thread initThread = new Thread( () -> {
+//
+//            getInstance().isWarmingUp.set( true );
+//
+//            System.out.println("Разогрев");
+//
+//            try
+//            {
+//                Thread.sleep( 5000 );
+//            }
+//            catch ( InterruptedException e )
+//            {
+//            }
+//
+//            Storage.getInstance().init();
+//        });
+//        initThread.start();
+
+    // todo Выполнить в отделном потоке
+    public final static void initStorage()
+    {
+        Storage.getInstance().init();
+    }
+
+    /**
+     * сбросить на диск
+     * todo если кеш в данный момент ращогревается, подождать завершения
+     */
+    public final static void saveStorage()
+    {
+//        if ( getInstance().isWarmingUp.get() == false ){
+//            System.out.println("can save()");
+//        } else {
+//            System.out.println("can NOT save");
+//        }
+
+        // удалить устаревшие ноды и каналы
+        Storage.getInstance().cleanL1();
+        Storage.getInstance().cleanL2();
+        Storage.getInstance().cleanRequests();
+
+        Storage.getInstance().save();
+    }
+
     /**
      * todo
      * отвалидировать ключ
@@ -213,28 +292,20 @@ public enum CacheService
     }
 
     /**
-     * разогрев кеша
-     * в отделном потоке
+     * true, если происходит разогрев кеша
      */
-    public final static void initStorage()
+    private boolean isWarmingUpNow()
     {
-
-        Storage.getInstance().initLevel2();
-        Storage.getInstance().initLevel1();
+        return false;
+        //return getInstance().isWarmingUp.get();
     }
 
     /**
-     * сбросить на диск
+     * Допустимые знаки: A-Z 0-9 _ - , .
      */
-    public final static void saveStorage()
+    private static String trimRequest(String request)
     {
-
+        return request.replaceAll( "[^a-zA-Z0-9_\\-.,]","" );
     }
 
-    /**
-     * Должны сохраняться при запуске
-     */
-    private static class Settings
-    {
-    }
 }

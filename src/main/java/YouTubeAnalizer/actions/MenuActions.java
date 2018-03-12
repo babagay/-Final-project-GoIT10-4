@@ -1,6 +1,5 @@
 package YouTubeAnalizer.actions;
 
-import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.view.BasicView;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.application.ParticleApplication;
@@ -22,8 +21,7 @@ public class MenuActions {
 
     @ActionProxy(text="Exit", accelerator="alt+F4")
     private void exit() {
-        CacheService.saveStorage();
-        app.exit();
+         app.exit();
     }
 
     @ActionProxy(text="About")
@@ -34,7 +32,6 @@ public class MenuActions {
         //alert.setGraphic(new ImageView(new Image(MenuActions.class.getResource("/icon.png").toExternalForm(), 48, 48, true, true)));
         alert.setContentText("This is a basic Desktop Application");
         alert.showAndWait();
-
     }
 
     /**
@@ -52,6 +49,7 @@ public class MenuActions {
                     BasicView homeView = (BasicView) app.getParticle().getViewManager().getCurrentView();
                     homeView.addFilePath(user);
                 });
+
     }
 
 }

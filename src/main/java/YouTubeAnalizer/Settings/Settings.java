@@ -16,7 +16,7 @@ public final class Settings {
     public static final String CACHE_FILE = "storage.json";
 
     @SerializedName ("expirationTime")
-    private int expirationTime;
+    private long expirationTime;
 
     /**
      * использовать ли кеш
@@ -47,7 +47,7 @@ public final class Settings {
     /**
      * Exp time shift in seconds
      */
-    public int getExpirationTime()
+    public long getExpirationTime()
     {
         return expirationTime;
     }

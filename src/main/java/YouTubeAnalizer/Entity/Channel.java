@@ -3,7 +3,7 @@ package YouTubeAnalizer.Entity;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-public class Channel {
+public class Channel implements Comparable<Channel> {
 
     /**
      * Дата создания канала
@@ -40,8 +40,13 @@ public class Channel {
     /**
      * Время протухания, сек.
      */
-    int expirationDate;
+    long expirationDate;
     
+    public Channel (String channelId)
+    {
+        this.channelId = channelId;
+    }
+
     public Channel (String channelId, int expirationDate)
     {
         this.channelId = channelId;
@@ -83,7 +88,7 @@ public class Channel {
         return videos;
     }
 
-    public int getExpirationDate()
+    public long getExpirationDate()
     {
         return expirationDate;
     }
@@ -113,7 +118,7 @@ public class Channel {
         this.videos = videos;
     }
 
-    public void setExpirationDate(int expirationDate)
+    public void setExpirationDate(long expirationDate)
     {
         this.expirationDate = expirationDate;
     }
@@ -124,5 +129,46 @@ public class Channel {
     public boolean isFresh()
     {
         return expirationDate > (int) System.currentTimeMillis()/1000;
+    }
+
+    /**
+     * true, если expirationDate < now
+     */
+    public boolean isExpired()
+    {
+        return !isFresh();
+    }
+
+    @Override
+    public int compareTo(Channel channel)
+    {
+        if ( channelId.compareTo( channel.channelId ) > 0 )
+        {
+            return 1;
+        }
+
+        if ( channelId.compareTo( channel.channelId ) < 0 )
+        {
+            return -1;
+        }
+
+        if ( channelId.compareTo( channel.channelId ) == 0 && !channelId.equals( channel.channelId ) )
+        {
+            return -1;
+        }
+
+        if ( channelId.compareTo( channel.channelId ) == 0 && channelId.equals( channel.channelId ) )
+        {
+            if ( hashCode() > channel.hashCode() )
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        return -1;
     }
 }

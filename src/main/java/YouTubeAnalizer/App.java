@@ -5,6 +5,7 @@ import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
 import javafx.scene.Scene;
+import javafx.stage.Stage;
 import org.controlsfx.control.NotificationPane;
 
 import java.lang.reflect.Field;
@@ -21,9 +22,14 @@ public class App extends ParticleApplication
         
         disableNotificationPane();
 
+
         settingsService.initSettings();
 
         CacheService.initStorage();
+
+
+
+        int r = 0;
     }
 
     @Override
@@ -32,6 +38,8 @@ public class App extends ParticleApplication
         getApp().buildMenu( "File -> [settings,---, exit]", "Help -> [about]" );
 
         getApp().getToolBarActions().addAll( actions( "settings" ) );
+
+        setOnCloseAction();
     }
 
     /**
@@ -66,5 +74,16 @@ public class App extends ParticleApplication
     private Particle getApp()
     {
         return getParticle();
+    }
+
+    // не работает
+    void setOnCloseAction()
+    {
+        Stage stage = getPrimaryStage();
+
+        stage.setOnCloseRequest( event -> {
+            System.out.println("Close");
+            CacheService.saveStorage();
+        } );
     }
 }

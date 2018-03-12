@@ -2,17 +2,42 @@ package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
+import com.google.common.io.CharStreams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+/**
+ * Хранилище данных кэша.
+ * Единица хранилища - узел (Node), формируемый при разогреве кэша объект.
+ * Новые ноды могут быть созданы в момент кеширования каналов, но на диске хранятся список запросов вместо списка нод.
+ * Узлы хранятся в Storage.nodes - это поле представляет собой Level1-кеш, который не сбрасывается на диск.
+ * Запросы в строковом виде, а также объекты каналов (Channel) хранятся в полях Storage.Repository.
+ * Поле Storage.Repository.channels представляет собой Level2-кеш.
+ * Объект класса Storage.Repository сбрасывается на диск. Например, при закрытии приложения.
+ *
+ * Запросы, сохраняемые в кеше, имеют вид строки: "channelA,channelB,channelC"
+ */
 final public class Storage {
-    
+
+    private Repository repository;
+
     private static class LazyHolder
     {
         public static final Storage StorageInstance = new Storage();
@@ -20,11 +45,9 @@ final public class Storage {
     
     private Storage()
     {
-        if ( nodes == null )
-            nodes = Collections.synchronizedSortedSet( new TreeSet() );
+        repository = new Repository();
 
-        if ( channels == null )
-            channels =  Collections.synchronizedSortedSet( new TreeSet() );
+        nodes = Collections.synchronizedSortedSet( new TreeSet() );
     }
     
     public static Storage getInstance()
@@ -36,50 +59,146 @@ final public class Storage {
      * кеш L1
      * не сохраняется на диск
      */
-    Set<Node> nodes;
-    
+    SortedSet<Node> nodes;
+
+    public SortedSet<String> getRequests()
+    {
+        return repository.requests;
+    }
+
+    public SortedSet<Channel> getChannels()
+    {
+        return repository.channels;
+    }
+
     /**
-     * список запросов
-     * сохранять на диск
+     * todo isWarmingUp = true
      */
-     
-    Set<String> requests;
-    
-    /**
-     * кеш L2
-     * список каналов
-     * сохраняется на диск
-     */
-    
-    SortedSet<Channel> channels;
-    
-    // todo в каком классе д.б. поле channels и requests
-    
-    // todo создать геттеры
-    
-    // todo переестить в сервис
-    // isWarmingUp = true
     void init()
     {
-    
+        String fileName = getFilePath();
+        String json = null;
+        File storageFile = new File( fileName );
+        InputStream targetStream = null;
+
+        File file = new File( fileName );
+
+        if ( !file.exists() )
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch ( IOException e )
+            {
+                e.printStackTrace();
+            }
+        }
+
+        try
+        {
+            targetStream = new FileInputStream( storageFile );
+        }
+        catch ( FileNotFoundException e )
+        {
+            e.printStackTrace();
+        }
+
+        try ( final InputStreamReader reader = new InputStreamReader( targetStream ) )
+        {
+            json = CharStreams.toString( reader );
+        }
+        catch ( IOException e )
+        {
+            e.printStackTrace();
+        }
+
+        if ( !json.equals( "" ) ){
+            Gson gson = new GsonBuilder().create();
+            repository = gson.fromJson( json, Repository.class );
+        }
+
+        initLevel1();
+
+        // CacheService.getInstance().setWarmingIsFinished();
+    }
+
+    /**
+     * Сохранить кеш в JSON-файл
+     */
+    void save()
+    {
+        String s = new Gson().toJson( repository );
+
+        BufferedWriter writer;
+
+        try
+        {
+            FileWriter fileWriter = new FileWriter( getFilePath() );
+
+            writer = new BufferedWriter( fileWriter );
+
+            writer.write( s );
+
+            writer.flush();
+
+            writer.close();
+        }
+        catch ( IOException e )
+        {
+            e.printStackTrace();
+        }
     }
     
     /**
-     * todo
      * поднять хранилище L1
      * восстановить список нод по списку requests
      */
-    void initLevel1(){
-    
+    void initLevel1()
+    {
+        restoreNodes();
     }
     
     /**
-     * todo
+     * @deprecated
      * поднять хранилище L2
      * восстановить список каналов
      */
     void initLevel2(){
-    
+    }
+
+    /**
+     * восстановить список узлов
+     * todo
+     * если по данному реквесту нода восстановлена лишь частично, её надо удалить, а также удалить реквест
+     */
+    void restoreNodes()
+    {
+        SortedSet<String> requests = getRequests();
+
+        if ( requests != null && requests.size() > 0 )
+        {
+            getRequests().stream().map( request -> {
+
+                TreeSet<Channel> channelSet = Arrays.stream( request.split( "," ) )
+                        .map( Storage::getChannelById )
+                        .filter( Objects::nonNull )
+                        .collect( TreeSet<Channel>::new, TreeSet::add, TreeSet::addAll );
+
+                if ( channelSet.size() < request.split( "," ).length )
+                {
+                    return null;
+                }
+                else
+                {
+                    Node node = Node.getFactory().create( request, channelSet );
+
+                    return node;
+                }
+            } )
+                    .filter( Objects::nonNull )
+                    .forEach( nodes::add );
+        }
     }
     
     /**
@@ -95,7 +214,9 @@ final public class Storage {
      */
     static Channel getChannelById(String channelId)
     {
-        return Storage.getInstance().channels.stream().filter( channel -> channel.channelId.equals( channelId ) ).findFirst().orElse( null );
+         return Storage.getInstance().getChannels().stream()
+                .filter( channel -> channel.getChannelId().equals( channelId ) )
+                .findFirst().orElse( null );
     }
 
     /**
@@ -107,23 +228,76 @@ final public class Storage {
     }
   
     /**
-     * удалить ноды с флагом isDead = true
+     * удалить нерелевантные ноды
      */
-    void clean()
+    void cleanL1()
     {
-        nodes.parallelStream().filter( Node::isDead ).forEach( Storage.getInstance()::removeNode );
+        ArrayList<Node> nodesToDrop = nodes.stream().filter( Node::isNotRelevant ).collect( ArrayList<Node>::new, ArrayList::add, ArrayList::addAll );
+
+        if ( nodesToDrop != null )
+            nodesToDrop.stream().forEach( Storage.getInstance()::removeNode );
+    }
+
+    /**
+     * Удалить просроченные каналы
+     */
+    void cleanL2()
+    {
+        ArrayList<Channel> channelsToDrop = repository.channels.parallelStream().filter( Channel::isExpired ).collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
+
+        if ( channelsToDrop != null )
+             channelsToDrop.stream().forEach( Storage.getInstance()::removeChannel );
+    }
+
+    /**
+     * Удалить запросы, для которых нет узлов
+     */
+    void cleanRequests()
+    {
+        ArrayList<String> remove = (ArrayList<String>) Storage.getInstance().repository.requests.stream()
+                .filter( key -> {
+                    try
+                    {
+                        if ( CacheService.getNode( key ) == null )
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    catch ( Exception e )
+                    {
+                        return true;
+                    }
+                } )
+                .collect( Collectors.toList() );
+
+        remove.stream().forEach( i -> Storage.getInstance().repository.requests.remove( i ) );
     }
     
     boolean isNodePresentedInCache(Node node)
     {
-        Node n = nodes.stream().filter( node1 -> node1.request.equals( node.request ) ).findFirst().orElse( null );
+        if ( nodes == null )
+            return false;
+
+        if ( nodes.size() == 0 )
+            return false;
+
+        Node n = nodes.stream()
+                .filter( node1 ->
+                        node1.request.equals( node.request )
+                )
+                .findFirst()
+                .orElse( null );
         
         return n != null;
     }
     
     boolean isRequestCached(String request)
     {
-        String req = requests.stream().filter( r -> r.equals( request ) ).findFirst().orElse( null );
+        String req = repository.requests.stream().filter( r -> r.equals( request ) ).findFirst().orElse( null );
         
         return req != null;
     }
@@ -132,22 +306,28 @@ final public class Storage {
     {
         Channel
                 c =
-                channels.stream()
+                repository.channels.stream()
                         .filter( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) )
                         .findFirst()
                         .orElse( null );
         return c != null;
     }
-    
-    // проверить, нет лли уже этой ноды
-    // добавить реквест в requests
+
+    /**
+     * проверить, нет ли уже этой ноды
+     * добавить реквест в requests
+     */
     void putNode(Node node)
     {
-        if ( !isNodePresentedInCache( node ) ) {
-            nodes.add( node );
-            
-            if ( !isRequestCached( node.request ) )
-                requests.add( node.request );
+        if ( node != null )
+        {
+            if ( !isNodePresentedInCache( node ) )
+            {
+                nodes.add( node );
+
+                if ( !isRequestCached( node.request ) )
+                    repository.requests.add( node.request );
+            }
         }
     }
  
@@ -157,31 +337,54 @@ final public class Storage {
     void putChannel(Channel channel)
     {
         if ( !isChannelCached( channel ) )
-        channels.add( channel );
+        repository.channels.add( channel );
     }
-    
-    // удалить из коллекции
-    // удалить из реквестов
+
+    /**
+     * удалить из коллекции
+     * удалить из реквестов
+     */
     void removeNode(Node node)
     {
         nodes.removeIf( node1 -> node1.request.equals( node.request ) );
         String
                 request =
-                requests.parallelStream()
+                repository.requests.parallelStream()
                         .filter( request1 -> request1.equals( node.request ) )
                         .findFirst()
                         .orElseGet( null );
         
         if ( request != null )
-        requests.remove( request );
+        repository.requests.remove( request );
     }
 
     void removeChannel(Channel channel)
     {
-        channels.removeIf( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) );
+        repository.channels.removeIf( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) );
     }
     
-    private class Repository {
-    
+    private class Repository
+    {
+        /**
+         * Список запросов
+         */
+        @SerializedName("requests")
+        SortedSet<String> requests;
+
+        /**
+         * кеш L2
+         * список каналов
+         */
+        @SerializedName("channels")
+        SortedSet<Channel> channels;
+
+        public Repository()
+        {
+            if ( requests == null )
+                requests = Collections.synchronizedSortedSet( new TreeSet() );
+
+            if ( channels == null )
+                channels =  Collections.synchronizedSortedSet( new TreeSet() );
+        }
     }
 }
