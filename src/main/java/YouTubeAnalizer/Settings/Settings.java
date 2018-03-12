@@ -9,6 +9,11 @@ public final class Settings {
      * Время протухания закешированного объекта канала по умолчанию, сек
      */
     public static final int EXPIRATION_TIME = 1000;
+    
+    /**
+     * Путь к кешу по умолчанию
+     */
+    public static final String CACHE_FILE = "storage.json";
 
     @SerializedName ("expirationTime")
     private int expirationTime;
@@ -28,15 +33,15 @@ public final class Settings {
     /**
      * путь к файлу кэша
      */
-    @SerializedName ("cacheDirectoryPath")
-    String cacheDirectoryPath;
+    @SerializedName ("cacheFilePath")
+    String cacheFilePath;
 
     Settings()
     {
         expirationTime = EXPIRATION_TIME;
         useCache = true;
         showRequestDuration = false;
-        cacheDirectoryPath = "";
+        cacheFilePath = CACHE_FILE;
     }
     
     /**
@@ -62,9 +67,9 @@ public final class Settings {
         return showRequestDuration;
     }
 
-    public String getCacheDirectoryPath()
+    public String getCacheFilePath ()
     {
-        return cacheDirectoryPath;
+        return cacheFilePath;
     }
 
     public void setUseCache(boolean useCache)
@@ -77,8 +82,8 @@ public final class Settings {
         this.showRequestDuration = showRequestDuration;
     }
 
-    public void setCacheDirectoryPath(String cacheDirectoryPath)
+    public void setCacheFilePath (String cacheFilePath)
     {
-        this.cacheDirectoryPath = cacheDirectoryPath;
+        this.cacheFilePath = cacheFilePath;
     }
 }

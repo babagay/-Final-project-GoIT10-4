@@ -1,6 +1,8 @@
 package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
+import YouTubeAnalizer.Settings.SettingsService;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +42,7 @@ final public class Storage {
      * список запросов
      * сохранять на диск
      */
+     
     Set<String> requests;
     
     /**
@@ -47,7 +50,19 @@ final public class Storage {
      * список каналов
      * сохраняется на диск
      */
+    
     SortedSet<Channel> channels;
+    
+    // todo в каком классе д.б. поле channels и requests
+    
+    // todo создать геттеры
+    
+    // todo переестить в сервис
+    // isWarmingUp = true
+    void init()
+    {
+    
+    }
     
     /**
      * todo
@@ -65,6 +80,14 @@ final public class Storage {
      */
     void initLevel2(){
     
+    }
+    
+    /**
+     * путь к файлу кеша
+     */
+    String getFilePath()
+    {
+        return SettingsService.getInstance().getSettings().getCacheFilePath();
     }
 
     /**
@@ -156,5 +179,9 @@ final public class Storage {
     void removeChannel(Channel channel)
     {
         channels.removeIf( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) );
+    }
+    
+    private class Repository {
+    
     }
 }
