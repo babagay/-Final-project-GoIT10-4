@@ -224,11 +224,10 @@ final public class Storage {
   
     /**
      * удалить нерелевантные ноды
-     * fixme метод работает не корректно - вытирает из реквестов "Channel D","Channel E","Channel G"
      */
     void cleanL1()
     {
-        ArrayList<Node> nodesToDrop = nodes.stream().filter( Node::isNotRelevant ).collect( ArrayList<Node>::new, ArrayList::add, ArrayList::addAll );
+        ArrayList<Node> nodesToDrop = nodes.stream().filter( Node::isNotRelevant ).collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
 
         if ( nodesToDrop != null )
             nodesToDrop.stream().forEach( Storage.getInstance()::removeNode );
@@ -239,7 +238,7 @@ final public class Storage {
      */
     void cleanL2()
     {
-        ArrayList<Channel> channelsToDrop = repository.channels.parallelStream().filter( Channel::isExpired ).collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
+        ArrayList<Channel> channelsToDrop = repository.channels.parallelStream().filter( Channel::isExpired ).collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
 
         if ( channelsToDrop != null )
              channelsToDrop.stream().forEach( Storage.getInstance()::removeChannel );

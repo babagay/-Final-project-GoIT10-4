@@ -12,19 +12,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * [issues]
- *
- * [!] Во время разогрева кеша ставится флаг
- * Если в это время вызывается set(), все нод помещаются во временный стек
- * И запускается процесс через FutureTask, который смотрит: ifCacheWarmingUp
- * И по окончании разогрева очередь процессится в отдельном потоке
- * Или прикрутить lock на запись (ТыПРогер)
- * [!] добавить задержку для эмуляции разогрева
  *
  * [!] ConcurrentMap - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
  *
- * todo
- * После разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
+ * [?] надо ли после разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
  */
 public enum CacheService
 {
@@ -77,17 +68,18 @@ public enum CacheService
     /**
      * Обёртка для getNode()
      */
-    public final static Set<Channel> get(String key)
+    public final static ArrayList<Channel> get(String key)
     {
-        Set<Channel> channels = null;
+        ArrayList<Channel> channels = new ArrayList<>(  );
 
         try
         {
-            channels = getNode( trimRequest( key ) ).channels;
+            channels = getNode( trimRequest( key ) ).channels.stream()
+                    .filter( Channel::isFresh )
+                    .collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
         }
         catch ( Exception e )
         {
-            // e.printStackTrace();
             // getNode( key ) м.б. null
         }
         finally
@@ -124,7 +116,7 @@ public enum CacheService
 
             // имитация продолжительного разогрева
             try {
-                Thread.sleep( 15000 );
+                Thread.sleep( 1500 );
             } catch ( InterruptedException e ) {
             }
 
@@ -212,13 +204,18 @@ public enum CacheService
 
     private static void save()
     {
-        Storage.getInstance().cleanL1();
-        Storage.getInstance().cleanL2();
-        Storage.getInstance().cleanRequests();
+        clean();
 
         Storage.getInstance().save();
 
-        System.out.println( "Saved" );
+        System.out.println( "Cache saved" );
+    }
+
+    private static void clean()
+    {
+        Storage.getInstance().cleanL1();
+        Storage.getInstance().cleanL2();
+        Storage.getInstance().cleanRequests();
     }
 
     /**

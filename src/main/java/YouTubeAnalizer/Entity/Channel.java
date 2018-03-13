@@ -128,7 +128,7 @@ public class Channel implements Comparable<Channel> {
      */
     public boolean isFresh()
     {
-        return expirationDate > (int) System.currentTimeMillis()/1000;
+        return expirationDate > System.currentTimeMillis() /1000;
     }
 
     /**
