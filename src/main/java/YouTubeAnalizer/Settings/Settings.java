@@ -31,7 +31,9 @@ public final class Settings {
     private boolean showRequestDuration;
 
     /**
-     * путь к файлу кэша
+     * путь к файлу кэша:
+     * имя файла либо
+     * полный путь + имя файла
      */
     @SerializedName ("cacheFilePath")
     String cacheFilePath;
@@ -52,7 +54,7 @@ public final class Settings {
         return expirationTime;
     }
 
-    public void setExpirationTime(int expirationTime)
+    public void setExpirationTime(long expirationTime)
     {
         this.expirationTime = expirationTime;
     }

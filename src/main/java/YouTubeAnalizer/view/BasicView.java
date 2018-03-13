@@ -1,5 +1,7 @@
 package YouTubeAnalizer.view;
 
+import YouTubeAnalizer.Cache.CacheService;
+import YouTubeAnalizer.Entity.Channel;
 import com.gluonhq.particle.annotation.ParticleView;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
@@ -19,26 +21,54 @@ public class BasicView implements View
 
     private final VBox controls = new VBox(15);
 
-    Button helloButton;
+    Button storeCacheButton, addChannelButton, getNodeButton;
 
     @Override
     public void init() {
 
-
-        // test btn
-        helloButton = new Button();
-        helloButton.setText( "Button" );
-        helloButton.setOnAction( e ->
-                System.out.println("Button pressed") );
+        // testing
+        storeCacheButton = new Button();
+        storeCacheButton.setText( "store Cache" );
+        storeCacheButton.setOnAction( e -> CacheService.saveStorage() );
 
 
-        controls.getChildren().addAll(helloButton);
-        controls.setAlignment( Pos.CENTER);
+
+        getNodeButton = new Button();
+        getNodeButton.setText( "get Channel" );
+        getNodeButton.setOnAction( e -> {
+            Channel channel = null;
+            try {
+                channel = CacheService.get( "Channel D2" ).get( 0 );
+                System.out.println("Got " + channel.getChannelId() + ", expDate " + channel.getExpirationDate());
+            } catch ( Exception e1 ) {
+                System.out.println("not found");
+            }
+        } );
+
+
+        addChannelButton = new Button();
+        addChannelButton.setText( "+ Channels" );
+        addChannelButton.setOnAction( e -> {
+
+                        Channel c1 = new Channel( "Channel D" );
+                        CacheService.set( c1.getChannelId(), c1 );
+
+
+                        Channel c2 = new Channel( "Channel E" );
+                        CacheService.set( c2.getChannelId(), c2 );
+
+                        Channel c3 = new Channel( "Channel G" );
+                        CacheService.set( c3.getChannelId(), c3 );
+        });
+
+        controls.getChildren().addAll( addChannelButton, storeCacheButton, getNodeButton );
+        controls.setAlignment( Pos.CENTER );
 
         stateManager.setPersistenceMode(StateManager.PersistenceMode.USER);
 
         addFilePath(stateManager.getProperty("CacheFilePath").orElse("").toString());
     }
+
 
     @Override
     public Node getContent() {
@@ -49,7 +79,7 @@ public class BasicView implements View
      * [!] Just example
      */
     public void addFilePath(String cacheFilePath) {
-        helloButton.setText(cacheFilePath.isEmpty() ? "..." : cacheFilePath);
+        // storeCacheButton.setText(cacheFilePath.isEmpty() ? "..." : cacheFilePath);
 
         stateManager.setProperty("CacheFilePath", cacheFilePath);
     }
