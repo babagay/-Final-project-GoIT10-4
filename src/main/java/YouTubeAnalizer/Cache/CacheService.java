@@ -27,11 +27,10 @@ public enum CacheService
 
     private CountDownLatch channelSetLatch;
 
-    private AtomicBoolean isWarmingUp;
+    private AtomicBoolean isWarmingUp = new AtomicBoolean( false );
 
     CacheService()
     {
-        isWarmingUp.set( false );
     }
 
     private final static CacheService getInstance()
@@ -40,10 +39,12 @@ public enum CacheService
     }
 
 
-//    public void setWarmingIsFinished()
-//    {
-//        getInstance().isWarmingUp.set( false );
-//    }
+    public static final void setWarmingIsFinished()
+    {
+        System.out.println("before setWarmingIsFinished " + getInstance().isWarmingUp.get());
+        getInstance().isWarmingUp.set( false );
+        System.out.println("Разогрев end");
+    }
 
     /**
      * Поискать в L1
@@ -236,30 +237,30 @@ public enum CacheService
         return key;
     }
 
-//       System.out.println("__Hauhtd");
-//
-//        Thread initThread = new Thread( () -> {
-//
-//            getInstance().isWarmingUp.set( true );
-//
-//            System.out.println("Разогрев");
-//
-//            try
-//            {
-//                Thread.sleep( 5000 );
-//            }
-//            catch ( InterruptedException e )
-//            {
-//            }
-//
-//            Storage.getInstance().init();
-//        });
-//        initThread.start();
+    
+
+    
 
     // todo Выполнить в отделном потоке
     public final static void initStorage()
     {
-        Storage.getInstance().init();
+        Thread initThread = new Thread( () -> {
+        
+            getInstance().isWarmingUp.set( true );
+        
+            System.out.println("Разогрев " +  getInstance().isWarmingUp.get());
+        
+            try
+            {
+                Thread.sleep( 5000 );
+            }
+            catch ( InterruptedException e )
+            {
+            }
+        
+            Storage.getInstance().init();
+        });
+        initThread.start();
     }
 
     /**
@@ -268,11 +269,17 @@ public enum CacheService
      */
     public final static void saveStorage()
     {
-//        if ( getInstance().isWarmingUp.get() == false ){
-//            System.out.println("can save()");
-//        } else {
-//            System.out.println("can NOT save");
-//        }
+     
+        
+        boolean isWarmingNow = getInstance().isWarmingUp.get();
+    
+        System.out.println( "isWarmingUp " + isWarmingNow );
+        
+        if ( isWarmingNow ){
+            System.out.println("can NOT save()");
+        } else {
+            System.out.println("can save");
+        }
 
         // удалить устаревшие ноды и каналы
         Storage.getInstance().cleanL1();

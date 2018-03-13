@@ -15,17 +15,21 @@ import static org.controlsfx.control.action.ActionMap.actions;
 public class App extends ParticleApplication
 {
     private static SettingsService settingsService = SettingsService.getInstance();
-
+    
     public App()
     {
         super( "YouTube Analyzer" );
         
         disableNotificationPane();
 
-
         settingsService.initSettings();
 
         CacheService.initStorage();
+    
+        
+    
+        // сделать кнопку Сохранить кэш
+        // CacheService.saveStorage();
 
 
 
@@ -83,7 +87,7 @@ public class App extends ParticleApplication
 
         stage.setOnCloseRequest( event -> {
             System.out.println("Close");
-            CacheService.saveStorage();
+            //CacheService.saveStorage();
         } );
     }
 }

@@ -71,9 +71,7 @@ final public class Storage {
         return repository.channels;
     }
 
-    /**
-     * todo isWarmingUp = true
-     */
+    
     void init()
     {
         String fileName = getFilePath();
@@ -120,7 +118,7 @@ final public class Storage {
 
         initLevel1();
 
-        // CacheService.getInstance().setWarmingIsFinished();
+        CacheService.setWarmingIsFinished();
     }
 
     /**
