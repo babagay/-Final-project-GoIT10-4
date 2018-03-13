@@ -7,20 +7,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -111,6 +99,7 @@ final public class Storage {
             e.printStackTrace();
         }
 
+        // init L2
         if ( !json.equals( "" ) ){
             Gson gson = new GsonBuilder().create();
             repository = gson.fromJson( json, Repository.class );
@@ -166,9 +155,7 @@ final public class Storage {
     }
 
     /**
-     * восстановить список узлов
-     * todo
-     * если по данному реквесту нода восстановлена лишь частично, её надо удалить, а также удалить реквест
+     * восстановить список узлов при разогреве кеша
      */
     void restoreNodes()
     {
@@ -176,24 +163,8 @@ final public class Storage {
 
         if ( requests != null && requests.size() > 0 )
         {
-            getRequests().stream().map( request -> {
-
-                TreeSet<Channel> channelSet = Arrays.stream( request.split( "," ) )
-                        .map( Storage::getChannelById )
-                        .filter( Objects::nonNull )
-                        .collect( TreeSet<Channel>::new, TreeSet::add, TreeSet::addAll );
-
-                if ( channelSet.size() < request.split( "," ).length )
-                {
-                    return null;
-                }
-                else
-                {
-                    Node node = Node.getFactory().create( request, channelSet );
-
-                    return node;
-                }
-            } )
+            getRequests().stream()
+                    .map( Node::restoreNode )
                     .filter( Objects::nonNull )
                     .forEach( nodes::add );
         }
@@ -249,6 +220,7 @@ final public class Storage {
 
     /**
      * Удалить запросы, для которых нет узлов
+     * todo если по данному реквесту нода восстановлена лишь частично, её надо удалить, а также удалить реквест
      */
     void cleanRequests()
     {

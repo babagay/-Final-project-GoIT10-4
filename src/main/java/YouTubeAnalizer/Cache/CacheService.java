@@ -20,6 +20,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * [!] добавить задержку для эмуляции разогрева
  *
  * [!] ConcurrentMap - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
+ *
+ * todo
+ * После разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
  */
 public enum CacheService
 {
@@ -51,7 +54,6 @@ public enum CacheService
      * если нет, поискать в L2. Если есть, создать ноду, добавить в сторадж и вернуть её.
      * если в L2 тоже нет, вернуть null
      * Возвращать можно массив или список вместо ноды
-     * todo если каналы, входящие в ноду, просрочены, нужно запустить рефреш кэша
      */
     public final static Node getNode(String key) throws Exception
     {
@@ -203,30 +205,17 @@ public enum CacheService
     }
 
     /**
-     * Если есть все требуемые каналы, создать ноду, добавить ее в сторадж и вернуть
+     * Если есть все требуемые каналы и они не просрочены,
+     * создать ноду, добавить ее в сторадж и вернуть
      */
     Node fetchChannelsFromL2andCreateNode(String key)
     {
-        Node node = new Node();
-        node.setRequest( key );
+        Node restoredNode = Node.getFactory().reproduce( key );
 
-        Arrays.stream( key.split( "," ) )
-                .map( CacheService::getChannelById )
-                .forEach( node::addChannel );
+        if ( restoredNode != null )
+            Storage.getInstance().putNode( restoredNode );
 
-        if ( node.getChannelNumber() < key.split( "," ).length )
-        {
-            node = null;
-        }
-
-        Storage.getInstance().putNode( node );
-
-        return node;
-    }
-
-    static Channel getChannelById(String channelId)
-    {
-        return null;
+        return restoredNode;
     }
 
     /**
@@ -237,64 +226,68 @@ public enum CacheService
         return key;
     }
 
-    
-
-    
-
-    // todo Выполнить в отделном потоке
+    /**
+     * Разогрев кеша
+     */
     public final static void initStorage()
     {
         Thread initThread = new Thread( () -> {
-        
+
             getInstance().isWarmingUp.set( true );
-        
-            System.out.println("Разогрев " +  getInstance().isWarmingUp.get());
-        
-            try
-            {
-                Thread.sleep( 5000 );
+
+            try {
+                // имитация продолжительного разогрева
+                Thread.sleep( 15000 );
+            } catch ( InterruptedException e ) {
             }
-            catch ( InterruptedException e )
-            {
-            }
-        
+
             Storage.getInstance().init();
-        });
+        } );
         initThread.start();
     }
 
     /**
-     * сбросить на диск
-     * todo если кеш в данный момент ращогревается, подождать завершения
+     * сбросить кеш на диск
      */
     public final static void saveStorage()
     {
-     
-        
-        boolean isWarmingNow = getInstance().isWarmingUp.get();
-    
-        System.out.println( "isWarmingUp " + isWarmingNow );
-        
-        if ( isWarmingNow ){
-            System.out.println("can NOT save()");
-        } else {
-            System.out.println("can save");
-        }
+        if ( getInstance().isWarmingUp.get() ) {
 
-        // удалить устаревшие ноды и каналы
+            // если кеш в данный момент разогревается, подождать завершения
+            while ( getInstance().isWarmingUp.get() ) {
+            }
+
+            save();
+        }
+        else {
+            save();
+        }
+    }
+
+    private static void save()
+    {
         Storage.getInstance().cleanL1();
         Storage.getInstance().cleanL2();
         Storage.getInstance().cleanRequests();
 
         Storage.getInstance().save();
+
+        System.out.println( "Saved" );
     }
 
     /**
-     * todo
      * отвалидировать ключ
      */
     private boolean isKeyValid(String key)
     {
+        if ( key.equals( "" ) )
+            return false;
+
+        String trimmed = trimRequest( key );
+
+        if ( !trimmed.equals( key ) )
+            return false;
+
         return true;
     }
 
@@ -303,8 +296,7 @@ public enum CacheService
      */
     private boolean isWarmingUpNow()
     {
-        return false;
-        //return getInstance().isWarmingUp.get();
+        return getInstance().isWarmingUp.get();
     }
 
     /**

@@ -131,6 +131,11 @@ public class Node implements Comparable<Node>
         return !isRelevant();
     }
 
+    static Node restoreNode(String key)
+    {
+        return Node.getFactory().reproduce( key );
+    }
+
     /**
      * восстановить ссылки на каналы, проверить их время протухания, пересчитать время протухания ноды
      */
@@ -170,7 +175,10 @@ public class Node implements Comparable<Node>
     }
 
     static class Factory {
-        
+
+        /**
+         * Собрать новую ноду
+         */
         Node create(String request, Channel... channels)
         {
             TreeSet<Channel> channelSet = generateChannelSet( channels );
@@ -181,11 +189,36 @@ public class Node implements Comparable<Node>
             return node;
         }
 
+        /**
+         * Собрать новую ноду
+         */
         Node create(String request, TreeSet<Channel> channelSet)
         {
             Node node = new Node( request, channelSet );
             node.setChannelNames( channelSet );
             node.refresh();
+
+            return node;
+        }
+
+        /**
+         * Собрать ноду на основании ранее закешированных объектов Channel
+         */
+        Node reproduce(String request)
+        {
+            Node node = new Node();
+            node.setRequest( request );
+
+            Arrays.stream( request.split( "," ) )
+                    .map( Storage::getChannelById )
+                    .filter( Channel::isFresh )
+                    .filter( Objects::nonNull )
+                    .forEach( node::addChannel );
+
+            if ( node.getChannelNumber() < request.split( "," ).length )
+            {
+                node = null;
+            }
 
             return node;
         }
