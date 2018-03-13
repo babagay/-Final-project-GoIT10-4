@@ -27,6 +27,10 @@ public enum CacheService
 
     private BlockingQueue<Runnable> deferedSetRequests = initDeferedSetRequestsQueue();
 
+    private long warmingTimeStart;
+
+    private long warmingTimeEnd;
+
     CacheService()
     {
     }
@@ -39,7 +43,12 @@ public enum CacheService
     public static final void setWarmingIsFinished()
     {
         getInstance().isWarmingUp.set( false );
-        System.out.println("Разогрев завершен");
+
+        getInstance().warmingTimeEnd = System.currentTimeMillis() / 1000;
+
+        long warmingUpTime =  getInstance().warmingTimeEnd -  getInstance().warmingTimeStart;
+
+        System.out.println("Разогрев кэша завершен. Потраченное время, сек: " + warmingUpTime);
     }
 
     /**
@@ -112,11 +121,11 @@ public enum CacheService
     {
         Thread initThread = new Thread( () -> {
 
-            getInstance().isWarmingUp.set( true );
+            getInstance().setWarming();
 
             // имитация продолжительного разогрева
             try {
-                Thread.sleep( 1500 );
+                Thread.sleep( 1 );
             } catch ( InterruptedException e ) {
             }
 
@@ -202,6 +211,9 @@ public enum CacheService
         Storage.getInstance().putNode( node );
     }
 
+    /**
+     * todo можно сделать в отдельном потоке
+     */
     private static void save()
     {
         clean();
@@ -240,6 +252,13 @@ public enum CacheService
     private boolean isWarmingUpNow()
     {
         return getInstance().isWarmingUp.get();
+    }
+
+    private void setWarming()
+    {
+        getInstance().isWarmingUp.set( true );
+
+        getInstance().warmingTimeStart = System.currentTimeMillis() / 1000;
     }
 
     /**
@@ -306,6 +325,9 @@ public enum CacheService
 
                                 // положить ноду в L1.
                                 Storage.getInstance().putNode( node );
+
+                                // Debug
+                                // System.out.println("канал " + channelToStore.getChannelId() + " добавлен");
                             }
 
                             getInstance().channelSetLatch.countDown();

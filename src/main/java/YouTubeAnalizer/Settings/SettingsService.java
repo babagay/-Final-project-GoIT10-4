@@ -79,8 +79,12 @@ public final class SettingsService
             Gson gson = new GsonBuilder().create();
             settings = gson.fromJson( json, Settings.class );
         }
-    }
 
+        System.out.println( "Показывать время выполнения запроса: " + settings.isShowRequestDuration() );
+        System.out.println( "Использовать кеш: " + settings.isUseCache() );
+        System.out.println( "Время протухания, сек: " + settings.getExpirationTime() );
+        System.out.println( "Путь к файлу кеша: " + settings.getCacheFilePath() );
+    }
 
     public void storeSettings()
     {
