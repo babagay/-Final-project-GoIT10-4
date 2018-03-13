@@ -211,8 +211,8 @@ public class Node implements Comparable<Node>
 
             Arrays.stream( request.split( "," ) )
                     .map( Storage::getChannelById )
-                    .filter( Channel::isFresh )
                     .filter( Objects::nonNull )
+                    .filter( Channel::isFresh )
                     .forEach( node::addChannel );
 
             if ( node.getChannelNumber() < request.split( "," ).length )

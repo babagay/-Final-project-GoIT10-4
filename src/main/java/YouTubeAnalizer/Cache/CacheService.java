@@ -6,6 +6,8 @@ import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.AsyncSubject;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,21 +34,21 @@ public enum CacheService
 
     private AtomicBoolean isWarmingUp = new AtomicBoolean( false );
 
+    private BlockingQueue<Runnable> deferedSetRequests = initDeferedSetRequestsQueue();
+
     CacheService()
     {
     }
 
-    private final static CacheService getInstance()
+    public static BlockingQueue<Runnable> getDeferedSetRequestsQueue()
     {
-        return CacheService.valueOf( "CACHE_SERVICE" );
+        return getInstance().deferedSetRequests;
     }
-
 
     public static final void setWarmingIsFinished()
     {
-        System.out.println("before setWarmingIsFinished " + getInstance().isWarmingUp.get());
         getInstance().isWarmingUp.set( false );
-        System.out.println("Разогрев end");
+        System.out.println("Разогрев завершен");
     }
 
     /**
@@ -97,103 +99,56 @@ public enum CacheService
     /**
      * Обёртка для set(Channel... channels).
      * Наиболее общий вариант кеширования запроса.
-     * todo если в данный момент идет разогрев, положить запрос на модификацию в потокобезопасную очередь, которую обработать после разогрева
      */
     public final static void set(String request, Channel... channels)
     {
         if ( CacheService.getInstance().isWarmingUpNow() )
         {
-            // todo
-            // put to the Queue либо запустить в отдельном потоке отложенное добавление
+            // если в данный момент идет разогрев, положить запрос на модификацию в потокобезопасную очередь, которую можно обработать после разогрева
+            getInstance().deferedSetRequests.add( new Thread( () -> setTask( request, channels ) ) );
         }
         else
         {
-            getInstance().channelSetLatch = new CountDownLatch( channels.length );
-
-            set( channels );
-
-            try
-            {
-                getInstance().channelSetLatch.await();
-            }
-            catch ( InterruptedException e )
-            {
-                e.printStackTrace();
-            }
-
-            Node node = Node.getFactory().create( trimRequest( request ), channels );
-
-            Storage.getInstance().putNode( node );
+            setTask( request, channels );
         }
     }
 
     /**
-     * Закешировать объект[ы] канала
+     * Разогрев кеша
      */
-    private final static void set(Channel... channels)
+    public final static void initStorage()
     {
-        AsyncSubject.fromArray( channels ).subscribeOn( Schedulers.computation() )
-                .subscribe(
-                        channelToStore -> {
+        Thread initThread = new Thread( () -> {
 
-                            // найти объект с заданным channelId в L2. Если он есть, это обновление. Если нет - добавление.
-                            Channel channel = Storage.getChannelById( channelToStore.channelId );
+            getInstance().isWarmingUp.set( true );
 
-                            if ( channel != null )
-                            {
-                                // Взять все ноды, в которые входит данный channelId.
-                                ArrayList<Node> connectedNodes = Storage.getNodesByChannel( channel );
-                                
-                                // Удалить канал channelId из кеша L2.
-                                Storage.getInstance().removeChannel( channel );
+            // имитация продолжительного разогрева
+            try {
+                Thread.sleep( 15000 );
+            } catch ( InterruptedException e ) {
+            }
 
-                                channel.setExpirationDate( generateExpirationTime() );
-
-                                // Выполнить добавление в L2.
-                                Storage.getInstance().putChannel( channel );
-
-                                connectedNodes.stream().forEach( node -> node.refresh() );
-
-                                // если после рефреша появились мертвые ноды, их надо удалить
-                                Storage.getInstance().cleanL1();
-                            }
-                            else
-                            {
-                                // Обновить время протухания канала.
-                                channelToStore.setExpirationDate( generateExpirationTime() );
-
-                                // положить в L2.
-                                Storage.getInstance().putChannel( channelToStore );
-                                
-                                // Создать ноду, обновить время протухания.
-                                Node node = new Node( channelToStore.channelId, Node.getFactory().generateChannelSet(channelToStore) );
-                                node.recalcExpirationDate();
-                                
-                                // положить ноду в L1.
-                                Storage.getInstance().putNode( node );
-                            }
-
-                            getInstance().channelSetLatch.countDown();
-                        },
-                        e -> {
-                            // System.out.println(e.getMessage());
-                        },
-                        () -> {
-                            // System.out.println("complete");
-                        }
-                );
+            Storage.getInstance().init();
+        } );
+        initThread.start();
     }
-    
-    /**
-     * Время протухания от текущего момента
-     */
-    private static long generateExpirationTime()
-    {
-        long delta = SettingsService.getInstance().getSettings().getExpirationTime();
 
-        long now = System.currentTimeMillis() / 1000;
-        
-        return now + delta;
+    /**
+     * сбросить кеш на диск
+     */
+    public final static void saveStorage()
+    {
+        if ( getInstance().isWarmingUp.get() ) {
+
+            // если кеш в данный момент разогревается, подождать завершения
+            while ( getInstance().isWarmingUp.get() ) {
+            }
+
+            save();
+        }
+        else {
+            save();
+        }
     }
 
     Optional<Node> fetchNodeFromCacheL1(String key)
@@ -226,42 +181,33 @@ public enum CacheService
         return key;
     }
 
-    /**
-     * Разогрев кеша
-     */
-    public final static void initStorage()
+    private static ArrayBlockingQueue<Runnable> initDeferedSetRequestsQueue()
     {
-        Thread initThread = new Thread( () -> {
-
-            getInstance().isWarmingUp.set( true );
-
-            try {
-                // имитация продолжительного разогрева
-                Thread.sleep( 15000 );
-            } catch ( InterruptedException e ) {
-            }
-
-            Storage.getInstance().init();
-        } );
-        initThread.start();
+        return new ArrayBlockingQueue<>( 10 );
     }
 
-    /**
-     * сбросить кеш на диск
-     */
-    public final static void saveStorage()
+    private final static CacheService getInstance()
     {
-        if ( getInstance().isWarmingUp.get() ) {
+        return CacheService.valueOf( "CACHE_SERVICE" );
+    }
 
-            // если кеш в данный момент разогревается, подождать завершения
-            while ( getInstance().isWarmingUp.get() ) {
-            }
+    private final static void setTask(String request, Channel... channels)
+    {
+        getInstance().channelSetLatch = new CountDownLatch( channels.length );
 
-            save();
+        set( channels );
+
+        try
+        {
+            getInstance().channelSetLatch.await();
         }
-        else {
-            save();
+        catch ( InterruptedException e )
+        {
         }
+
+        Node node = Node.getFactory().create( trimRequest( request ), channels );
+
+        Storage.getInstance().putNode( node );
     }
 
     private static void save()
@@ -304,7 +250,76 @@ public enum CacheService
      */
     private static String trimRequest(String request)
     {
-        return request.replaceAll( "[^a-zA-Z0-9_\\-.,]","" );
+        return request.replaceAll( "[^a-zA-Z0-9 _\\-.,]","" );
+    }
+
+    /**
+     * Время протухания от текущего момента
+     */
+    private static long generateExpirationTime()
+    {
+        long delta = SettingsService.getInstance().getSettings().getExpirationTime();
+
+        long now = System.currentTimeMillis() / 1000;
+
+        return now + delta;
+    }
+
+    /**
+     * Закешировать объект[ы] канала
+     */
+    private final static void set(Channel... channels)
+    {
+        AsyncSubject.fromArray( channels ).subscribeOn( Schedulers.computation() )
+                .subscribe(
+                        channelToStore -> {
+
+                            // найти объект с заданным channelId в L2. Если он есть, это обновление. Если нет - добавление.
+                            Channel channel = Storage.getChannelById( channelToStore.channelId );
+
+                            if ( channel != null )
+                            {
+                                // Взять все ноды, в которые входит данный channelId.
+                                ArrayList<Node> connectedNodes = Storage.getNodesByChannel( channel );
+
+                                // Удалить канал channelId из кеша L2.
+                                Storage.getInstance().removeChannel( channel );
+
+                                channel.setExpirationDate( generateExpirationTime() );
+
+                                // Выполнить добавление в L2.
+                                Storage.getInstance().putChannel( channel );
+
+                                connectedNodes.stream().forEach( node -> node.refresh() );
+
+                                // если после рефреша появились мертвые ноды, их надо удалить
+                                Storage.getInstance().cleanL1();
+                            }
+                            else
+                            {
+                                // Обновить время протухания канала.
+                                channelToStore.setExpirationDate( generateExpirationTime() );
+
+                                // положить в L2.
+                                Storage.getInstance().putChannel( channelToStore );
+
+                                // Создать ноду, обновить время протухания.
+                                Node node = new Node( channelToStore.channelId, Node.getFactory().generateChannelSet(channelToStore) );
+                                node.recalcExpirationDate();
+
+                                // положить ноду в L1.
+                                Storage.getInstance().putNode( node );
+                            }
+
+                            getInstance().channelSetLatch.countDown();
+                        },
+                        e -> {
+                            // System.out.println(e.getMessage());
+                        },
+                        () -> {
+                            // System.out.println("complete");
+                        }
+                );
     }
 
 }

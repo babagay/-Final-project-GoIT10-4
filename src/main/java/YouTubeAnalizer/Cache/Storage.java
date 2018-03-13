@@ -9,6 +9,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -107,7 +108,11 @@ final public class Storage {
 
         initLevel1();
 
+        examine();
+
         CacheService.setWarmingIsFinished();
+
+        processDeferedSetRequestsQueue();
     }
 
     /**
@@ -159,6 +164,15 @@ final public class Storage {
      */
     void restoreNodes()
     {
+        restoreNodesFromRequests();
+        restoreNodesFromL2();
+    }
+
+    /**
+     * восстановить ноды на основании закешированных запросов
+     */
+    void restoreNodesFromRequests()
+    {
         SortedSet<String> requests = getRequests();
 
         if ( requests != null && requests.size() > 0 )
@@ -169,7 +183,19 @@ final public class Storage {
                     .forEach( nodes::add );
         }
     }
-    
+
+    /**
+     * восстановить ноды на основании закешированных каналов
+     */
+    void restoreNodesFromL2()
+    {
+        Storage.getInstance().getChannels().stream()
+                .forEach( channel -> {
+                    Node node = Node.getFactory().create( channel.getChannelId(), channel );
+                    putNode( node );
+                } );
+    }
+
     /**
      * путь к файлу кеша
      */
@@ -198,6 +224,7 @@ final public class Storage {
   
     /**
      * удалить нерелевантные ноды
+     * fixme метод работает не корректно - вытирает из реквестов "Channel D","Channel E","Channel G"
      */
     void cleanL1()
     {
@@ -355,6 +382,29 @@ final public class Storage {
 
             if ( channels == null )
                 channels =  Collections.synchronizedSortedSet( new TreeSet() );
+        }
+    }
+
+    // todo
+    // проверить на наличие битых реквестов, мертвых узлов и просроченных каналов
+    private void examine()
+    {
+
+    }
+
+    private void processDeferedSetRequestsQueue()
+    {
+        BlockingQueue<Runnable> queue = CacheService.getDeferedSetRequestsQueue();
+
+        if ( queue.size() > 0 ){
+
+            queue.stream().forEach( runnable -> {
+                try {
+                    queue.take();
+                } catch ( InterruptedException e ) {
+                }
+                runnable.run();
+            } );
         }
     }
 }
