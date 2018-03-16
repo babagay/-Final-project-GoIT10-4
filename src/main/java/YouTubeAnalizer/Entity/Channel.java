@@ -140,6 +140,14 @@ public class Channel implements Comparable<Channel> {
     }
 
     @Override
+    public String toString()
+    {
+        return "Channel{" +
+                "channelId='" + channelId + '\'' +
+                '}';
+    }
+
+    @Override
     public int compareTo(Channel channel)
     {
         if ( channelId.compareTo( channel.channelId ) > 0 )

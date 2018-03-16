@@ -7,9 +7,22 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 /**
@@ -31,12 +44,16 @@ final public class Storage {
     {
         public static final Storage StorageInstance = new Storage();
     }
-    
+
+    // todo
+    // можно вычислять и запоминать при сохранении количество кнаалов и узлов,
+    // чтобы при разогреве указывать мощность множества
     private Storage()
     {
         repository = new Repository();
 
-        nodes = Collections.synchronizedSortedSet( new TreeSet() );
+        // nodes = Collections.synchronizedSortedSet( new TreeSet() );
+        nodes = new ConcurrentSkipListSet();
     }
     
     public static Storage getInstance()
@@ -48,7 +65,7 @@ final public class Storage {
      * кеш L1
      * не сохраняется на диск
      */
-    SortedSet<Node> nodes;
+    Set<Node> nodes;
 
     public SortedSet<String> getRequests()
     {
@@ -113,6 +130,11 @@ final public class Storage {
         CacheService.setWarmingIsFinished();
 
         processDeferedSetRequestsQueue();
+
+        // todo
+        // выводить сообщение, сколько узлов сгенерировано
+        // сколько запросов закешировано
+        // и сколько объектов
     }
 
     /**
@@ -165,6 +187,8 @@ final public class Storage {
     void restoreNodes()
     {
         restoreNodesFromRequests();
+
+        // if ( CacheService.shouldNodeBeCached() ) // [!] думаю, не очень хорошая практика
         restoreNodesFromL2();
     }
 
@@ -206,6 +230,8 @@ final public class Storage {
 
     /**
      * Найти канал в L2 кеше
+     * todo
+     * похоже, нужно юзать Storage.getInstance().getChannels().parallelStream()
      */
     static Channel getChannelById(String channelId)
     {

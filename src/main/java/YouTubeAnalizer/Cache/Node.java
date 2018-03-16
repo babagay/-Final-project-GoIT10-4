@@ -171,7 +171,14 @@ public class Node implements Comparable<Node>
      */
     void recalcExpirationDate()
     {
-        expirationDate = channels.stream().min( Comparator.comparingLong( Channel::getExpirationDate ) ).get().getExpirationDate();
+        try
+        {
+            expirationDate = channels.stream()
+                    .min( Comparator.comparingLong( Channel::getExpirationDate ) )
+                    .get()
+                    .getExpirationDate();
+        } catch ( NoSuchElementException e ){
+        }
     }
 
     static class Factory {
@@ -209,13 +216,17 @@ public class Node implements Comparable<Node>
             Node node = new Node();
             node.setRequest( request );
 
-            Arrays.stream( request.split( "," ) )
+            String[] channels = request.split( "," );
+
+            Arrays.stream( channels )
                     .map( Storage::getChannelById )
                     .filter( Objects::nonNull )
                     .filter( Channel::isFresh )
                     .forEach( node::addChannel );
 
-            if ( node.getChannelNumber() < request.split( "," ).length )
+            node.recalcExpirationDate();
+
+            if ( node.getChannelNumber() < channels.length )
             {
                 node = null;
             }

@@ -13,7 +13,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
- * [!] ConcurrentMap - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
+ * [!] ConcurrentSkipListSet - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
+ *      или Map
  *
  * [?] надо ли после разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
  */
@@ -30,6 +31,8 @@ public enum CacheService
     private long warmingTimeStart;
 
     private long warmingTimeEnd;
+
+    private boolean doNotCacheNode = false;
 
     CacheService()
     {
@@ -49,6 +52,11 @@ public enum CacheService
         long warmingUpTime =  getInstance().warmingTimeEnd -  getInstance().warmingTimeStart;
 
         System.out.println("Разогрев кэша завершен. Потраченное время, сек: " + warmingUpTime);
+    }
+
+    public static boolean shouldNodeBeCached()
+    {
+        return getInstance().doNotCacheNode;
     }
 
     /**
@@ -95,6 +103,20 @@ public enum CacheService
         {
             return channels;
         }
+    }
+
+    /**
+     * Перегруженная версия основного метода, позволяющая принудительно не кешировать
+     * созданную в случае успешного поиска ноду
+     * использовать: get(key, false) - чтобы не кешировать ноду
+     * [!] метд не имеет смысла, т.к. при разогреве все ноды восстанавливаются
+     */
+    public final static ArrayList<Channel> get(String key, boolean doCreateNode)
+    {
+        if ( doCreateNode == false )
+            getInstance().doNotCacheNode = true;
+
+        return get( key );
     }
 
     /**
@@ -152,6 +174,8 @@ public enum CacheService
         }
     }
 
+    // todo
+    // наверное, надо использовать parallelStream()
     Optional<Node> fetchNodeFromCacheL1(String key)
     {
         return Storage.getInstance().nodes.stream()
@@ -169,7 +193,10 @@ public enum CacheService
         Node restoredNode = Node.getFactory().reproduce( key );
 
         if ( restoredNode != null )
+        {
+            if ( getInstance().doNotCacheNode == false )
             Storage.getInstance().putNode( restoredNode );
+        }
 
         return restoredNode;
     }
