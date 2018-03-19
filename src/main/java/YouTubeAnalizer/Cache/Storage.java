@@ -1,6 +1,7 @@
 package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
+import YouTubeAnalizer.Settings.Settings;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
@@ -15,6 +16,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -76,26 +80,26 @@ final public class Storage {
     {
         return repository.channels;
     }
-
+ 
+    private String cacheFileName;
     
     void init()
     {
-        String fileName = getFilePath();
+        cacheFileName = getFilePath();
         String json = null;
-        File storageFile = new File( fileName );
+        File storageFile = new File( cacheFileName );
         InputStream targetStream = null;
 
-        File file = new File( fileName );
+        File file = new File( cacheFileName );
 
         if ( !file.exists() )
         {
-            try
-            {
-                file.createNewFile();
-            }
-            catch ( IOException e )
-            {
-                e.printStackTrace();
+            if ( dirExists() ) {
+                createFile();
+                save();
+            } else {
+                createDir();
+                createFile();
             }
         }
 
@@ -136,6 +140,8 @@ final public class Storage {
         // сколько запросов закешировано
         // и сколько объектов
     }
+    
+    
 
     /**
      * Сохранить кеш в JSON-файл
@@ -220,13 +226,6 @@ final public class Storage {
                 } );
     }
 
-    /**
-     * путь к файлу кеша
-     */
-    String getFilePath()
-    {
-        return SettingsService.getInstance().getSettings().getCacheFilePath();
-    }
 
     /**
      * Найти канал в L2 кеше
@@ -432,5 +431,55 @@ final public class Storage {
                 runnable.run();
             } );
         }
+    }
+   
+    
+    private boolean dirExists(){
+    
+        Path path = Paths.get( getDir() );
+        return Files.exists( path );
+        
+    }
+    
+    private void createFile(){
+        File file = new File( cacheFileName );
+        try {
+            file.createNewFile();
+        }
+        catch ( IOException e ) {
+            e.printStackTrace();
+        }
+    }
+    private void createDir(){
+        File theDir = new File(getDir());
+        System.out.println("creating directory: " + theDir.getName());
+        boolean result = false;
+    
+        try{
+            theDir.mkdir();
+            result = true;
+        }
+        catch(SecurityException se){
+            //handle it
+        }
+        if(result) {
+            System.out.println("DIR created");
+        }
+    }
+    
+    
+    /**
+     * путь к файлу кеша
+     */
+    private String getFilePath()
+    {
+        return SettingsService.getInstance().getSettings().getCacheFilePath();
+    }
+    
+    /**
+     * Папка кеша
+     */
+    private String getDir(){
+        return SettingsService.getInstance().getSettings().getCacheDirectory();
     }
 }

@@ -1,1 +1,1 @@
-{"expirationTime":10000,"useCache":true,"showRequestDuration":true,"cacheFilePath":"D:\\storage.json"}
+{"expirationTime":1000,"useCache":true,"showRequestDuration":false,"cacheDirectory":"D:\\projects\\YouTube-analizer","cacheFilePath":"storage.json"}

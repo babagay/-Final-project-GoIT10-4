@@ -7,6 +7,8 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 
+import java.io.File;
+
 public class SettingsActions {
 
     @FXML private Text actiontarget;
@@ -26,6 +28,10 @@ public class SettingsActions {
         settingsService.getSettings().setShowRequestDuration( showRequestDuration.isSelected() );
         settingsService.getSettings().setCacheFilePath( cacheFilePath.getText() );
         settingsService.getSettings().setExpirationTime( Long.parseLong( expirationTime.getText()) );
+    
+        File cacheDir = new File( cacheFilePath.getText()).getParentFile();
+        
+        settingsService.getSettings().setCacheDirectory( cacheDir.toString() );
 
         settingsService.storeSettings();
     }

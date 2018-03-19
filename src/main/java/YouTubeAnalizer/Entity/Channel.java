@@ -6,21 +6,25 @@ import java.util.Set;
 public class Channel implements Comparable<Channel> {
 
     /**
+     * @deprecated
      * Дата создания канала
      */
     LocalDateTime creationDate;
 
-    int followersNumber;
+    long followersNumber;
 
     /**
      *  Кол-во видео на канале
      */
-    int videosNumber;
+    long videosNumber;
 
     /**
      * Кол-во просмотров всех видео
      */
-    int totalViewsNumber;
+    long totalViewsNumber;
+    
+    long totalCommentsNumber;
+    
 
     /**
      * Имя канала
@@ -28,7 +32,7 @@ public class Channel implements Comparable<Channel> {
     public String name;
 
     /**
-     * [?] или channelID и есть имя канала
+     * уникальный идентификатор канала
      */
     public String channelId;
 
@@ -42,9 +46,13 @@ public class Channel implements Comparable<Channel> {
      */
     long expirationDate;
     
+    String description;
+    
     public Channel (String channelId)
     {
         this.channelId = channelId;
+        
+        // todo сгенерить expirationDate
     }
 
     public Channel (String channelId, int expirationDate)
@@ -58,17 +66,17 @@ public class Channel implements Comparable<Channel> {
         return creationDate;
     }
 
-    public int getFollowersNumber()
+    public long getFollowersNumber()
     {
         return followersNumber;
     }
 
-    public int getVideosNumber()
+    public long getVideosNumber ()
     {
         return videosNumber;
     }
 
-    public int getTotalViewsNumber()
+    public long getTotalViewsNumber ()
     {
         return totalViewsNumber;
     }
@@ -98,17 +106,12 @@ public class Channel implements Comparable<Channel> {
         this.creationDate = creationDate;
     }
 
-    public void setFollowersNumber(int followersNumber)
+    public void setFollowersNumber(long followersNumber)
     {
         this.followersNumber = followersNumber;
     }
-
-    public void setVideosNumber(int videosNumber)
-    {
-        this.videosNumber = videosNumber;
-    }
-
-    public void setTotalViewsNumber(int totalViewsNumber)
+ 
+    public void setTotalViewsNumber(long totalViewsNumber)
     {
         this.totalViewsNumber = totalViewsNumber;
     }
@@ -122,7 +125,32 @@ public class Channel implements Comparable<Channel> {
     {
         this.expirationDate = expirationDate;
     }
-
+    
+    public void setDescription (String description)
+    {
+        this.description = description;
+    }
+    
+    public long getTotalCommentsNumber ()
+    {
+        return totalCommentsNumber;
+    }
+    
+    public void setTotalCommentsNumber (long totalCommentsNumber)
+    {
+        this.totalCommentsNumber = totalCommentsNumber;
+    }
+    
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+    
+    public void setVideosNumber (long videosNumber)
+    {
+        this.videosNumber = videosNumber;
+    }
+    
     /**
      * true, если текущее время меньше expirationDate
      */

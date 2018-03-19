@@ -13,6 +13,11 @@ public final class Settings {
     /**
      * Путь к кешу по умолчанию
      */
+    private static String CACHE_DIRECTORY = System.getProperty("user.dir");
+    
+    /**
+     * Файл кеша по умолчанию
+     */
     public static final String CACHE_FILE = "storage.json";
 
     @SerializedName ("expirationTime")
@@ -29,6 +34,12 @@ public final class Settings {
      */
     @SerializedName ("showRequestDuration")
     private boolean showRequestDuration;
+    
+    /**
+     * папка кеша
+     */
+    @SerializedName ("cacheDirectory")
+    private String cacheDirectory;
 
     /**
      * путь к файлу кэша:
@@ -44,6 +55,12 @@ public final class Settings {
         useCache = true;
         showRequestDuration = false;
         cacheFilePath = CACHE_FILE;
+        cacheDirectory = CACHE_DIRECTORY;
+    }
+    
+    public String getCacheDirectory ()
+    {
+        return cacheDirectory;
     }
     
     /**
@@ -58,8 +75,13 @@ public final class Settings {
     {
         this.expirationTime = expirationTime;
     }
-
-    public boolean isUseCache()
+    
+    public void setCacheDirectory (String cacheDirectory)
+    {
+        this.cacheDirectory = cacheDirectory;
+    }
+    
+    public boolean isUseCache ()
     {
         return useCache;
     }
@@ -84,6 +106,7 @@ public final class Settings {
         this.showRequestDuration = showRequestDuration;
     }
 
+    // todo валидация
     public void setCacheFilePath (String cacheFilePath)
     {
         this.cacheFilePath = cacheFilePath;

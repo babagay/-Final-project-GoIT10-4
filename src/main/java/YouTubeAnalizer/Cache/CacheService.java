@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * fixme
  * программа отвалилась на другом компе из-за отсутсвия файла кеша по нестандартному пути
+ * Кодировка файла кеша д.б. UTF8
  *
  * todo
  * заюзать контрол Browse
@@ -127,10 +128,11 @@ public enum CacheService
 
         return get( key );
     }
-
+    
     /**
      * Обёртка для set(Channel... channels).
      * Наиболее общий вариант кеширования запроса.
+     * [!] метод set(Channel) скрыт для того, чтобы вынудить пользовательский код указать строку запроса
      */
     public final static void set(String request, Channel... channels)
     {

@@ -36,6 +36,8 @@ public final class SettingsService
 
     public void initSettings()
     {
+//        boolean initSettingsFile = false;
+        
         File storageFile = new File( fileName );
         InputStream targetStream = null;
 
@@ -75,6 +77,7 @@ public final class SettingsService
 
         if ( json.equals( "" ) ){
             settings = new Settings();
+            storeSettings();
         } else {
             Gson gson = new GsonBuilder().create();
             settings = gson.fromJson( json, Settings.class );
@@ -83,7 +86,8 @@ public final class SettingsService
         System.out.println( "Показывать время выполнения запроса: " + settings.isShowRequestDuration() );
         System.out.println( "Использовать кеш: " + settings.isUseCache() );
         System.out.println( "Время протухания, сек: " + settings.getExpirationTime() );
-        System.out.println( "Путь к файлу кеша: " + settings.getCacheFilePath() );
+        System.out.println( "Путь к файлу кеша: " + settings.getCacheDirectory() );
+        System.out.println( "файл кеша: " + settings.getCacheFilePath() );
     }
 
     public void storeSettings()

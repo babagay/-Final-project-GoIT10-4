@@ -12,28 +12,36 @@ import java.lang.reflect.Field;
 
 import static org.controlsfx.control.action.ActionMap.actions;
 
+/**
+ * https://developers.google.com/youtube/v3/code_samples/
+ * https://developers.google.com/youtube/v3/code_samples/java#search_by_location
+ * https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
+ * https://developers.google.com/youtube/v3/docs/channels
+ * todo перенести в сервис
+ * todo указывать в part минимум (statistics)
+ */
 public class App extends ParticleApplication
 {
     private static SettingsService settingsService = SettingsService.getInstance();
     
+    private static final String APPLICATION_NAME = "YouTube Analyzer";
+    
+  
+    
+   
+    
+    
+    
+    
     public App()
     {
-        super( "YouTube Analyzer" );
+        super( APPLICATION_NAME );
         
         disableNotificationPane();
 
         settingsService.initSettings();
 
         CacheService.initStorage();
-    
-        
-    
-        // сделать кнопку Сохранить кэш
-        // CacheService.saveStorage();
-
-
-
-        int r = 0;
     }
 
     @Override
