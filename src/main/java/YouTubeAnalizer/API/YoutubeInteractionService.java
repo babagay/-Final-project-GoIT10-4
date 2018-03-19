@@ -1,7 +1,6 @@
 package YouTubeAnalizer.API;
 
 import YouTubeAnalizer.App;
-import YouTubeAnalizer.Settings.SettingsService;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -14,12 +13,16 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeScopes;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 //import static YouTubeAnalizer.App.authorize;
 
@@ -45,6 +48,11 @@ public final class YoutubeInteractionService {
     
     private static final List<String> SCOPES =
             Arrays.asList( YouTubeScopes.YOUTUBE_READONLY );
+
+    /**
+     * Parts of general data info set which can be fetched from Youtube service
+     */
+    private String part = "brandingSettings,snippet,contentDetails,statistics";
     
     static {
         try {
@@ -79,6 +87,50 @@ public final class YoutubeInteractionService {
         return new YouTube.Builder( HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+    }
+
+    public List<Channel> getChannels(String request)
+    {
+        YouTube youtube;
+        List<Channel> list = new ArrayList<>();
+
+        try {
+            youtube = getYouTubeService();
+
+            YouTube.Channels.List
+                    channelsListByUsernameRequest =
+                    youtube.channels().list( part );
+            channelsListByUsernameRequest.setId( request );
+            ChannelListResponse response = channelsListByUsernameRequest.execute();
+            list = response.getItems();
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        } finally {
+            return list;
+        }
+    }
+
+    public YouTubeAnalizer.Entity.Channel test(String s){
+        return new YouTubeAnalizer.Entity.Channel( "" );
+    }
+
+    public ArrayList<YouTubeAnalizer.Entity.Channel> mapChannels(List<Channel> channels)
+    {
+        return channels.stream().filter( Objects::nonNull )
+                .map( this::mapChannel )
+                .collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
+    }
+
+    // todo
+    public YouTubeAnalizer.Entity.Channel mapChannel(Channel channel){
+        YouTubeAnalizer.Entity.Channel channel1 = new YouTubeAnalizer.Entity.Channel( channel.getId() );
+        //                    channel1.setFollowersNumber( channel.getStatistics().getSubscriberCount().longValueExact() );
+        //                    channel1.setName( channel.getBrandingSettings().getChannel().getTitle() );
+        //                    channel1.setDescription( channel.getBrandingSettings().getChannel().getDescription() );
+        //                    channel1.setTotalCommentsNumber( channel.getStatistics().getCommentCount().longValueExact() );
+        //                    channel1.setVideosNumber( channel.getStatistics().getVideoCount().longValueExact() );
+        //                    channel1.setTotalViewsNumber( channel.getStatistics().getViewCount().longValueExact() );
+        return channel1;
     }
     
     /**

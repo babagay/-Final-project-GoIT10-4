@@ -8,9 +8,6 @@ import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.annotation.ParticleView;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.ChannelListResponse;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -19,7 +16,11 @@ import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @ParticleView(name = "basic", isDefault = true)
 public class BasicView implements View
@@ -238,6 +239,8 @@ public class BasicView implements View
     }
 
 
+
+
     @Override
     public Node getContent() {
         return controls;
@@ -284,57 +287,106 @@ public class BasicView implements View
         }
         return null;
     }
-    
-    private void handleGetChannel (ActionEvent e)
+
+    private CompletableFuture<Stream<Channel>> getChannels(String request)
+    {
+        CompletableFuture<Stream<Channel>> futureStream = CompletableFuture
+                .supplyAsync( () -> {
+                            // worker-1
+                            return youtubeInteractionService.getChannels( request );
+                        }, ForkJoinPool.commonPool()
+                        // todo создать свой пул.
+                        // Однако, здесь https://allegro.tech/2014/10/async-rest.html
+                        // рекомендуют юзать RxJersey https://jersey.github.io/#rx-client.java8
+                        // https://stackoverflow.com/questions/39469435/working-with-jersey-client-in-rx-style
+                )
+                // [?] Почему не работает код: return youtubeInteractionService.mapChannels( w );
+                .thenComposeAsync( w -> {
+                            // worker-1
+                            return CompletableFuture.supplyAsync( () -> {
+                                // worker-2
+                                return youtubeInteractionService.mapChannels( w ).stream();
+                            } );
+                        }
+                )
+                .whenComplete( (r, throwable) -> {
+                            // worker-2
+                            if ( throwable == null ) {
+                                // OK
+                            }
+                            else {
+                                throw new RuntimeException( throwable );
+                            }
+                        }
+                )
+                .exceptionally( throwable -> {
+                    System.out.println( throwable.getMessage() );
+                    return null;
+                } );
+
+        return futureStream;
+    }
+
+
+    private void handleGetChannel (ActionEvent event)
     {
         String request = "UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A";
         
-        // todo положить в отдельный поток, сперва создав пул
+        // todo положить в отдельный поток, сперва создав пул (может, заюзать ForkJoinPool.commonPool()?)
         // сделать FutureTsk, всегда возвращающий ArrayList<Channel>
-        
+
+
+
+        // todo как написать это красиво, в одну строчку? if channel == null then getChannelsFromApi
+        // CompletableFuture.getChannelsFromCache()[если каналы есть, бросить исключение].ifNull().getChannelsFromApi()
+        // [?] действительно ли, getChannelsFromCache и getChannelsFromApi выполняются параллельно
         ArrayList<Channel> channels = getCachedChannels( request );
+
+//        getCachedChannels( request ).stream().map( chan -> /* сохранить каналы. если что-то не так, вернуть null */chan ).findAny()
+//                .orElseGet( () ->
+//                        (Channel) youtubeInteractionService.getChannels( request )
+//                );
+
+
         if ( channels == null ) {
-            // берем через аписервис
     
-            YouTube youtube;
+
             try {
-                youtube = youtubeInteractionService.getYouTubeService();
-        
-                YouTube.Channels.List
-                        channelsListByUsernameRequest =
-                        youtube.channels().list( "brandingSettings,snippet,contentDetails,statistics" );
-                // channelsListByUsernameRequest.setForUsername("GoogleDevelopers");
-                channelsListByUsernameRequest.setId( request ); // UCs6Agc6DvG7dZ8X4wZiGR1A
-        
-                ChannelListResponse response = channelsListByUsernameRequest.execute();
-//                    com.google.api.services.youtube.model.Channel channel = response.getItems().get( 0 );
+
+                // Можно сделать в духе, как в кеш-сервисе:
+                // channels = fetchFromCache().orElse( fetchFromYoutube() )
+
+                // [?] Стоит ли создавать отдельный пул
+
+                // [!] В этом месте код разветвляется
+                // и то, что внутри thenApply() отработает позже того, что в конце метода handleGetChannel()
+                // Решение: создать метод, возвращающий CompletableFuture и присоединить к нему then() или whenComplete
+
+                // https://www.youtube.com/watch?v=aMQJnigGvfY
+                // https://dzone.com/articles/20-examples-of-using-javas-completablefuture
+                // http://www.deadcoderising.com/java8-writing-asynchronous-code-with-completablefuture/
+                // CompletableFuture.supplyAsync( this::getRndInt, ForkJoinPool.commonPool() );
+                // List<com.google.api.services.youtube.model.Channel> Y_channels = youtubeInteractionService.getChannels( request );
+//                CompletableFuture<List<com.google.api.services.youtube.model.Channel>> one = CompletableFuture.supplyAsync( () -> youtubeInteractionService.getChannels( request ) ); // OK
+//                Function<CompletableFuture<List<com.google.api.services.youtube.model.Channel>>, CompletableFuture<ArrayList<Channel>>> function =
+//                        channelList -> CompletableFuture.supplyAsync( () -> youtubeInteractionService.mapChannels(channelList.getNow( null )) );
+                getChannels( request )
+                        .thenApply( channelArrayListStream -> {
+
+                            channelArrayListStream.forEach( c -> {
+                                System.out.println( c.channelId );
+                            } );
+                            return null;
+                        } );
+
+
+                //                    com.google.api.services.youtube.model.Channel channel = response.getItems().get( 0 );
 //                    System.out.printf(
 //                            "This channel's ID is %s. Its title is '%s', and it has %s views.\n",
 //                            channel.getId(),
 //                            channel.getSnippet().getTitle(),
 //                            channel.getStatistics().getViewCount());
-    
-                channels = response.getItems().stream()
-                                   .filter( Objects::nonNull )
-                        .map( c -> {
-                                      // System.out.println( c.getBrandingSettings() .getChannel()  .getDescription() )
-                                      // todo запихнут ьв метод static Channel.YouTubeChannelToChannel()
-                            // Либо весь маппинг вынести в YoutubeInteractionService.mapChannels
-                    Channel channel1 = new Channel( c.getId() );
-//                    channel1.setFollowersNumber( channel.getStatistics().getSubscriberCount().longValueExact() );
-//                    channel1.setName( channel.getBrandingSettings().getChannel().getTitle() );
-//                    channel1.setDescription( channel.getBrandingSettings().getChannel().getDescription() );
-//                    channel1.setTotalCommentsNumber( channel.getStatistics().getCommentCount().longValueExact() );
-//                    channel1.setVideosNumber( channel.getStatistics().getVideoCount().longValueExact() );
-//                    channel1.setTotalViewsNumber( channel.getStatistics().getViewCount().longValueExact() );
-                            // todo set expiration date на основе данных из Сеттингов
-                            return channel1;
-                                  }
-                                )
-                .collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
-    
-    
-                System.out.println(channels.get( 0 ));
+
           
         
                 // todo сложить каналы в ArrayList<Channel>
@@ -347,11 +399,11 @@ public class BasicView implements View
         
         
             }
-            catch ( GoogleJsonResponseException err ) {
-                err.printStackTrace();
-                System.err.println( "There was a service error: " +
-                                    err.getDetails().getCode() + " : " + err.getDetails().getMessage() );
-            }
+//            catch ( GoogleJsonResponseException err ) {
+//                err.printStackTrace();
+//                System.err.println( "There was a service error: " +
+//                                    err.getDetails().getCode() + " : " + err.getDetails().getMessage() );
+//            }
             catch ( Throwable t ) {
                 t.printStackTrace();
             }
