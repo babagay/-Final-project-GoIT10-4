@@ -8,6 +8,8 @@ import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.annotation.ParticleView;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -19,7 +21,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ParticleView(name = "basic", isDefault = true)
@@ -277,15 +278,25 @@ public class BasicView implements View
     }
     
     private ArrayList<Channel> getCachedChannels(String request){
+       
+       
+       
+      
+      
         if ( SettingsService.getInstance().getSettings().isUseCache() ){
             // если включен кеш , пробуем взять из кеша сперва
             ArrayList<Channel> channels = CacheService.get( request );
-        
+
             if ( channels.size() > 0 ){
             return channels;
             }
         }
         return null;
+    }
+    
+    private Optional<ArrayList<Channel>> getCachedChannelsOpt (String request){
+        Optional<ArrayList<Channel>> o = Optional.ofNullable( getCachedChannels( request ) );
+        return o;
     }
 
     private CompletableFuture<Stream<Channel>> getChannels(String request)
@@ -346,8 +357,42 @@ public class BasicView implements View
 //                .orElseGet( () ->
 //                        (Channel) youtubeInteractionService.getChannels( request )
 //                );
-
-
+    
+//        Optional<ArrayList<Channel>> f = getCachedChannelsOpt( request );
+        
+        
+        Observable.create(
+                (ObservableEmitter<Optional<ArrayList<Channel>>> o) -> {
+                    o.onNext( getCachedChannelsOpt( request ) );
+                    o.onComplete();
+                
+                }
+                         )
+                  // http://reactivex.io/documentation/operators.html
+                
+                  .map(  t -> {
+                      if ( t.isPresent() ){
+                         // render( t.get() )
+                         // засечь время
+                      }
+                      
+                      return t;
+                  } )
+                  .filter( r -> !r.isPresent() )
+                  .subscribe(
+                r -> {
+                    
+                    // todo взять из апи
+                    // закешировать
+                    // засечь время
+                    // render()
+                }
+                                    )
+        
+        ;
+        
+        
+        
         if ( channels == null ) {
     
 
