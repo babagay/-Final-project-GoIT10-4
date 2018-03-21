@@ -1,9 +1,10 @@
 package YouTubeAnalizer.Entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-public class Channel implements Comparable<Channel> {
+public class Channel implements Comparable<Channel>, Serializable {
 
     /**
      * @deprecated

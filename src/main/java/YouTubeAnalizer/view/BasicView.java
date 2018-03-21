@@ -278,10 +278,6 @@ public class BasicView implements View
     }
     
     private ArrayList<Channel> getCachedChannels(String request){
-       
-       
-       
-      
       
         if ( SettingsService.getInstance().getSettings().isUseCache() ){
             // если включен кеш , пробуем взять из кеша сперва

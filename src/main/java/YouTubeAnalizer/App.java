@@ -1,9 +1,12 @@
 package YouTubeAnalizer;
 
 import YouTubeAnalizer.Cache.CacheService;
+import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
+import YouTubeAnalizer.view.SearchForm;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
+import com.gluonhq.particle.form.Form;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.controlsfx.control.NotificationPane;
@@ -50,7 +53,18 @@ public class App extends ParticleApplication
         getApp().buildMenu( "File -> [settings,---, exit]", "Help -> [about]" );
 
         getApp().getToolBarActions().addAll( actions( "settings" ) );
-
+    
+    
+//        Form<String> form = new Form<String>() {}
+//        getApp().getFormManager().registerForm(  );
+    
+        // http://docs.gluonhq.com/particle/1.1.3/#_singleton_injections
+//        getApp().getFormManager()
+//                .getForm( SearchForm.class, Form.UpdateMode.UPDATE_NEW_INSTANCE )
+//                .ifPresent( form -> form.configure( new Channel( "Mark" ) )
+//                                        .resizable( false )
+//                                        .showAndWait() );
+        
         setOnCloseAction();
     }
 
