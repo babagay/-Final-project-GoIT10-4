@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * [!] Т.к. разогрев кеша зависит от присутствия настроек, можно сделать фьючерс с initSettings(), к которому присоединён старт кеш-сервиса
+ */
 public final class SettingsService
 {
     private String fileName = "settings.json";

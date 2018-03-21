@@ -49,7 +49,7 @@
           GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
     <stylesheets>
-        <URL value="@Settings.css" />
+        <URL value="@../actions/Settings.css" />
     </stylesheets>
 
 </GridPane>

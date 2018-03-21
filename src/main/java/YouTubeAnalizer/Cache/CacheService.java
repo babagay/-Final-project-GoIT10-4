@@ -148,7 +148,7 @@ public enum CacheService
     }
 
     /**
-     * Разогрев кеша
+     * Разогрев кеша в отдельном потоке
      */
     public final static void initStorage()
     {

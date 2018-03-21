@@ -1,0 +1,20 @@
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.web.*?>
+
+<AnchorPane fx:controller="YouTubeAnalizer.actions.SearchActions"
+        id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1024"  xmlns:fx="http://javafx.com/fxml">
+    <children>
+        <TextField layoutX="40.0" layoutY="149.0" prefWidth="160.0" promptText="request" text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request" />
+
+
+
+        <Button layoutX="40.0" layoutY="41.0" mnemonicParsing="false" text="Button" onAction="#doRequest" />
+    </children>
+</AnchorPane>

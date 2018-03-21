@@ -82,7 +82,10 @@ final public class Storage {
     }
  
     private String cacheFileName;
-    
+
+    /**
+     * Разогрев кеша
+     */
     void init()
     {
         cacheFileName = getFilePath();

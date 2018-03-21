@@ -1,5 +1,6 @@
 package YouTubeAnalizer.actions;
 
+import YouTubeAnalizer.Settings.Settings;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.application.ParticleApplication;
 import com.gluonhq.particle.state.StateManager;
@@ -25,7 +26,8 @@ public class MenuActions {
 
     @ActionProxy(text="Exit", accelerator="alt+F4")
     private void exit() {
-         app.exit();
+        // System.out.println("[B]"); // не работает
+        app.exit();
     }
 
     @ActionProxy(text="About")
@@ -42,14 +44,13 @@ public class MenuActions {
     @ActionProxy (text = "Settings")
     private void settings()
     {
-
         Stage stage = new Stage();
         Parent root = null;
 
 
         try {
             root = FXMLLoader.load(
-                    SettingsActions.class.getResource( "Settings.fxml" ) );
+                    Settings.class.getResource( "Settings.fxml" ) );
         } catch ( IOException e ) {
             e.printStackTrace();
         }
