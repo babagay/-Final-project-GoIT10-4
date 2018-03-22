@@ -50,7 +50,7 @@ public class MenuActions {
 
         try {
             root = FXMLLoader.load(
-                    Settings.class.getResource( "Settings.fxml" ) );
+                    Settings.class.getResource( "ui-settings.form.fxml" ) );
         } catch ( IOException e ) {
             e.printStackTrace();
         }

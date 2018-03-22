@@ -9,12 +9,34 @@
 <?import javafx.scene.web.*?>
 
 <AnchorPane fx:controller="YouTubeAnalizer.actions.SearchActions"
-        id="AnchorPaneSearch" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="1024"  xmlns:fx="http://javafx.com/fxml">
+        id="PaneSearch" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200" minWidth="-Infinity" prefWidth="1024" prefHeight="200" xmlns:fx="http://javafx.com/fxml">
     <children>
-        <TextField layoutX="40.0" layoutY="149.0" prefWidth="160.0" promptText="request" text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request" />
-        <Label text="${foo}"/>
+
+        <ComboBox layoutX="20.0" layoutY="10.0" prefWidth="160.0">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="Item 1" />
+                    <String fx:value="Item 2" />
+                    <String fx:value="Item 3" />
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <!--<SplitMenuButton layoutX="40.0" layoutY="83.0" mnemonicParsing="false" prefWidth="153.0" text="SplitMenuButton">-->
+            <!--<items>-->
+                <!--<MenuItem mnemonicParsing="false" text="Action 1" />-->
+                <!--<MenuItem mnemonicParsing="false" text="Action 2" />-->
+            <!--</items>-->
+        <!--</SplitMenuButton>-->
+
+        <TextField layoutX="200.0" layoutY="10.0" prefWidth="580.0" promptText="request" text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request" />
 
 
-        <Button layoutX="40.0" layoutY="41.0" mnemonicParsing="false" text="Button" onAction="#doRequest" />
+
+        <Button layoutX="800.0" layoutY="10.0" mnemonicParsing="false" text="Button" onAction="#doRequest" />
+
+        <ProgressIndicator layoutX="870.0" layoutY="10.0" prefHeight="59.0" prefWidth="56.0" progress="0.0" fx:id="requestProgress" />
+
+        <Label layoutX="950.0" layoutY="10.0" text="" fx:id="requestTime" />
     </children>
 </AnchorPane>
