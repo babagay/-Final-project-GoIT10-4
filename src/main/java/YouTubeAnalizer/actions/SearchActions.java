@@ -2,11 +2,8 @@ package YouTubeAnalizer.actions;
 
 import YouTubeAnalizer.Request.RequestService;
 import com.gluonhq.particle.annotation.ParticleActions;
-import com.gluonhq.particle.application.Particle;
-import com.gluonhq.particle.application.ParticleApplication;
 import com.gluonhq.particle.state.StateManager;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,10 +11,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TextField;
 
-import javax.inject.Inject;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -46,32 +41,42 @@ public class SearchActions implements Initializable
         stateManager = RequestService.application.getStateManager();
     }
 
-    private final static int GET_SINGLE_CHANNEL_REQUEST = 0;
-    private final static int GET_TWO_CHANNEL_REQUEST = 1;
-    private final static int GET_MULTI_CHANNEL_REQUEST = 2;
+    private final static int GET_SINGLE_CHANNEL_SHORT_INFO_REQUEST = 0;
+    private final static int    GET_TWO_CHANNEL_SHORT_INFO_REQUEST = 1;
+    private final static int  GET_MULTI_CHANNEL_SHORT_INFO_REQUEST = 2;
+    private final static int  GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST = 3;
+    private final static int     GET_TWO_CHANNEL_WIDE_INFO_REQUEST = 4;
+    private final static int   GET_MULTI_CHANNEL_WIDE_INFO_REQUEST = 5;
 
     @FXML
     protected void doRequest(ActionEvent event)
     {
         restartProgress();
 
-
-
         switch ( requestType.getSelectionModel().getSelectedIndex() ){
-            case GET_SINGLE_CHANNEL_REQUEST:
+            case GET_SINGLE_CHANNEL_SHORT_INFO_REQUEST:
                 System.out.println("sing");
                 break;
-            case GET_TWO_CHANNEL_REQUEST:
+            case GET_TWO_CHANNEL_SHORT_INFO_REQUEST:
                 System.out.println("tw");
                 break;
-            case GET_MULTI_CHANNEL_REQUEST:
+            case GET_MULTI_CHANNEL_SHORT_INFO_REQUEST:
+                System.out.println("m");
+                break;
+            case GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST:
+                System.out.println("sing");
+                break;
+            case GET_TWO_CHANNEL_WIDE_INFO_REQUEST:
+                System.out.println("tw");
+                break;
+            case GET_MULTI_CHANNEL_WIDE_INFO_REQUEST:
                 System.out.println("m");
                 break;
         }
 
         // todo
-        // взять значение ComboBox'a
         // сформировать нужный запрос
+        // В зависимости от запроса, своя валидация
 
         RequestService.get( request.getText(), channels -> {
 
@@ -163,7 +168,7 @@ public class SearchActions implements Initializable
         requestProgress.setProgress( value );
     }
 
-    // thread pool
+    // use thread pool
     private void restartProgress()
     {
         requestProgress.setVisible( true );

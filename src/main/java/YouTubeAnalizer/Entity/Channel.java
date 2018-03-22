@@ -7,11 +7,13 @@ import java.util.Set;
 public class Channel implements Comparable<Channel>, Serializable {
 
     /**
-     * @deprecated
      * Дата создания канала
      */
     LocalDateTime creationDate;
 
+    /**
+     * Количество подписчиков
+     */
     long followersNumber;
 
     /**
@@ -23,9 +25,11 @@ public class Channel implements Comparable<Channel>, Serializable {
      * Кол-во просмотров всех видео
      */
     long totalViewsNumber;
-    
+
+    /**
+     * Количество комментариев всех видео
+     */
     long totalCommentsNumber;
-    
 
     /**
      * Имя канала
@@ -53,7 +57,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     {
         this.channelId = channelId;
         
-        // todo сгенерить expirationDate
+        // todo сгенерить expirationDate, если она не генерится при сохранении в кеш
     }
 
     public Channel (String channelId, int expirationDate)

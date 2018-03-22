@@ -1,39 +1,40 @@
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.collections.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.chart.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.web.*?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<AnchorPane fx:controller="YouTubeAnalizer.actions.SearchActions"
-            id="PaneSearch" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="50" minWidth="-Infinity"
-            prefWidth="1000" prefHeight="50" xmlns:fx="http://javafx.com/fxml">
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane id="PaneSearch" maxHeight="47.0" maxWidth="-Infinity" minHeight="47.0" minWidth="-Infinity" prefHeight="47.0" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="YouTubeAnalizer.actions.SearchActions">
     <children>
 
-        <ComboBox layoutX="20.0" layoutY="10.0" prefWidth="160.0" fx:id="requestType">
+        <ComboBox fx:id="requestType" layoutX="20.0" layoutY="10.0" prefWidth="260.0">
             <items>
                 <FXCollections fx:factory="observableArrayList">
-                    <String fx:value="sinfle"/>
-                    <String fx:value="2"/>
-                    <String fx:value="multi"/>
-                    <String fx:value="4"/>
-                    <String fx:value="5"/>
-                    <String fx:value="6"/>
+                    <String fx:value="Краткая информация о канале" />
+                    <String fx:value="Сравнить 2 канала (краткая информация)" />
+                    <String fx:value="Набор каналов (краткая информация)" />
+                    <String fx:value="Медиа-резонанс канала" />
+                    <String fx:value="Сравнить 2 канала по медиа-резонансу" />
+                    <String fx:value="Набор каналов (медиа-резонанс)" />
                 </FXCollections>
             </items>
         </ComboBox>
 
-        <TextField layoutX="200.0" layoutY="10.0" prefWidth="580.0" promptText="request"
-                   text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request"/>
+        <TextField fx:id="request" layoutX="290.0" layoutY="10.0" prefWidth="490.0" promptText="request" text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A">
+         <tooltip>
+            <Tooltip text="Enter channels IDs separated by comma" />
+         </tooltip></TextField>
 
-        <Button layoutX="800.0" layoutY="10.0" mnemonicParsing="false" text="Go!" onAction="#doRequest"/>
+        <Button layoutX="800.0" layoutY="10.0" mnemonicParsing="false" onAction="#doRequest" text="Go!" />
 
-        <ProgressIndicator layoutX="870.0" layoutY="10.0" prefHeight="59.0" prefWidth="56.0" progress="0.0"
-                           fx:id="requestProgress"/>
+        <ProgressIndicator fx:id="requestProgress" layoutX="842.0" layoutY="4.0" prefHeight="59.0" prefWidth="56.0" progress="0.0" />
 
-        <Label layoutX="880.0" layoutY="10.0" text="" fx:id="requestTime"/>
+        <Label fx:id="requestTime" layoutX="842.0" layoutY="10.0" text="" />
     </children>
 </AnchorPane>

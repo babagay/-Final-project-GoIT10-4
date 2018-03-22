@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Text?>
 
-<GridPane fx:controller="YouTubeAnalizer.actions.SettingsActions"
-          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10"
-          styleClass="root">
-    <padding><Insets top="25" right="25" bottom="10" left="25" /></padding>
+<GridPane alignment="center" hgap="10" styleClass="root" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="YouTubeAnalizer.actions.SettingsActions">
+    <padding><Insets bottom="10" left="25" right="25" top="25" /></padding>
 
-    <Text id="settings-text" text="Settings"
-          GridPane.columnIndex="0" GridPane.rowIndex="0"
-          GridPane.columnSpan="2"/>
+    <Text id="settings-text" text="Settings" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
 
-    <Label text="Cache File (Path + Filename):"
-           GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <Label text="Cache File (Path + Filename):" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
-    <TextField fx:id="cacheFilePath"
-            GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <TextField fx:id="cacheFilePath" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-    <Label text="Expiration Time, sec:"
-           GridPane.columnIndex="0" GridPane.rowIndex="2" />
+    <Label text="Expiration Time, sec:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
 
-    <TextField fx:id="expirationTime"
-                   GridPane.columnIndex="1" GridPane.rowIndex="2" />
+    <TextField fx:id="expirationTime" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-    <Label text="Use Cache:"
-           GridPane.columnIndex="0" GridPane.rowIndex="3" />
+    <Label text="Use Cache:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
 
-    <CheckBox fx:id="useCache"
-                   GridPane.columnIndex="1" GridPane.rowIndex="3" />
+    <CheckBox fx:id="useCache" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-    <Label text="Show Request Duration:"
-           GridPane.columnIndex="0" GridPane.rowIndex="4" />
+    <Label text="Show Request Duration:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
 
-    <CheckBox fx:id="showRequestDuration"
-                   GridPane.columnIndex="1" GridPane.rowIndex="4" />
+    <CheckBox fx:id="showRequestDuration" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-    <HBox spacing="10" alignment="bottom_right"
-          GridPane.columnIndex="1" GridPane.rowIndex="5">
-        <Button text="Save"
-                onAction="#handleSubmitButtonAction" />
+    <HBox alignment="bottom_right" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5">
+        <Button fx:id="storeSettingsButton" onAction="#handleSubmitButtonAction" text="Save" />
     </HBox>
 
-    <Text fx:id="actiontarget"
-          GridPane.columnIndex="1" GridPane.rowIndex="6" />
+    <Text fx:id="actiontarget" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
     <stylesheets>
         <URL value="@../actions/Settings.css" />
     </stylesheets>
+   <columnConstraints>
+      <ColumnConstraints />
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+   </rowConstraints>
 
 </GridPane>

@@ -107,7 +107,7 @@ public class BasicView implements View
 
         try
         {
-            channelInfoBox.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-channels.fxml")) ));
+            channelInfoBox.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-channels-grid.fxml")) ));
         }
         catch ( IOException e )
         {
@@ -122,14 +122,14 @@ public class BasicView implements View
     {
         try
         {
-            requestContainer.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-search.form.fxml")) ));
+            rootContainer.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-search.form.fxml")) ));
         }
         catch ( IOException e )
         {
             e.printStackTrace();
         }
 
-        rootContainer.getChildren().add( requestContainer );
+        /// rootContainer.getChildren().add( requestContainer );
     }
 
 /*
