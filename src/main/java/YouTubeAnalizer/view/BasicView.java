@@ -3,7 +3,7 @@ package YouTubeAnalizer.view;
 import YouTubeAnalizer.API.YoutubeInteractionService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
-import YouTubeAnalizer.ServiceExample;
+//import YouTubeAnalizer.ServiceExample;
 import com.gluonhq.particle.annotation.ParticleView;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
@@ -20,7 +20,7 @@ import javafx.scene.layout.VBox;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  *  // testing
@@ -34,7 +34,7 @@ public class BasicView implements View
 {
     private static YoutubeInteractionService youtubeInteractionService = YoutubeInteractionService.getInstance();
 
-    final ServiceExample serviceExample = new ServiceExample();
+    //final ServiceExample serviceExample = new ServiceExample();
     
     @Inject
     private StateManager stateManager;
@@ -59,15 +59,15 @@ public class BasicView implements View
 
 
         // ----- ProgressIndicator -------
-        p2.visibleProperty().bind( serviceExample.runningProperty() );
-        serviceExample.setOnSucceeded( workerStateEvent -> {
-            String result = serviceExample.getValue();   //here you get the return value of your service
-            // System.out.println("Result "+ result); // "toto"
-        } );
-
-        serviceExample.setOnFailed( workerStateEvent -> {
-            //DO stuff on failed
-        } );
+//        p2.visibleProperty().bind( serviceExample.runningProperty() );
+//        serviceExample.setOnSucceeded( workerStateEvent -> {
+//            String result = serviceExample.getValue();   //here you get the return value of your service
+//            // System.out.println("Result "+ result); // "toto"
+//        } );
+//
+//        serviceExample.setOnFailed( workerStateEvent -> {
+//            //DO stuff on failed
+//        } );
         // -------------
 
         makeSearchForm();
@@ -176,7 +176,7 @@ public class BasicView implements View
     private void handleGetChannel (ActionEvent event)
     {
         p2.setProgress(0.0F);
-        serviceExample.restart();
+        //serviceExample.restart();
         System.out.println("serviceExample restart()");
 
 

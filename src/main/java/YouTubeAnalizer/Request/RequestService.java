@@ -10,6 +10,7 @@ import io.reactivex.ObservableEmitter;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -21,6 +22,9 @@ public class RequestService
     public static Observable<String> channelStream;
 
     public static ObservableEmitter<String> channelStreamer;
+    
+    // pool = Executors.newFixedThreadPool( 4 );
+    
 
     public static void init()
     {

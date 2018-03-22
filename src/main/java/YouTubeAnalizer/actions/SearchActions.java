@@ -1,6 +1,7 @@
 package YouTubeAnalizer.actions;
 
 import YouTubeAnalizer.Request.RequestService;
+import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.application.ParticleApplication;
 import javafx.event.ActionEvent;
@@ -17,10 +18,16 @@ public class SearchActions
 
     @FXML
     private TextField request;
+    
+    @FXML
+    private String foo = SettingsService.getInstance().getSettings().getCacheDirectory();
 
     @FXML
     protected void doRequest(ActionEvent event)
     {
+        // todo
+        // в зависимости от выбранной опции, посылает опр запрос
+        
         RequestService.get( request.getText(), channels -> {
 
             // todo
