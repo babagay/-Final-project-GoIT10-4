@@ -51,10 +51,14 @@ public class BasicView implements View
 
     @Override
     public void init() {
-    
-        getChannelButton = new Button();
-        getChannelButton.setText( "get Channel from Ytube" );
-        getChannelButton.setOnAction( this::handleGetChannel );
+
+        requestContainer.setMinHeight( 60 );
+        requestContainer.setBorder( null ); // todo убрать границы
+        requestContainer.setPickOnBounds( false ); // todo сделать ,чтоб не выделялись границы при фокусе
+
+//        getChannelButton = new Button();
+//        getChannelButton.setText( "get Channel from Ytube" );
+//        getChannelButton.setOnAction( this::handleGetChannel );
 
 
 

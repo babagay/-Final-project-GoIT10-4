@@ -2,12 +2,19 @@ package YouTubeAnalizer.actions;
 
 import YouTubeAnalizer.Request.RequestService;
 import com.gluonhq.particle.annotation.ParticleActions;
+import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
+import com.gluonhq.particle.state.StateManager;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TextField;
 
 import javax.inject.Inject;
@@ -17,8 +24,11 @@ import java.util.ResourceBundle;
 @ParticleActions
 public class SearchActions implements Initializable
 {
-    @Inject
-    ParticleApplication app;
+
+    private StateManager stateManager;
+
+    @FXML
+    private ComboBox<String> requestType;
 
     @FXML
     private TextField request;
@@ -31,28 +41,57 @@ public class SearchActions implements Initializable
 
     private volatile double progress = 0.0;
 
+    public SearchActions()
+    {
+        stateManager = RequestService.application.getStateManager();
+    }
+
+    private final static int GET_SINGLE_CHANNEL_REQUEST = 0;
+    private final static int GET_TWO_CHANNEL_REQUEST = 1;
+    private final static int GET_MULTI_CHANNEL_REQUEST = 2;
 
     @FXML
     protected void doRequest(ActionEvent event)
     {
         restartProgress();
 
+
+
+        switch ( requestType.getSelectionModel().getSelectedIndex() ){
+            case GET_SINGLE_CHANNEL_REQUEST:
+                System.out.println("sing");
+                break;
+            case GET_TWO_CHANNEL_REQUEST:
+                System.out.println("tw");
+                break;
+            case GET_MULTI_CHANNEL_REQUEST:
+                System.out.println("m");
+                break;
+        }
+
         // todo
-        // в зависимости от выбранной опции, посылает опр запрос
+        // взять значение ComboBox'a
+        // сформировать нужный запрос
 
         RequestService.get( request.getText(), channels -> {
 
             // todo
-            // render
-            // запоминает время окончания запроса
+
+            // вычисляет время окончания запроса
+
             // отдает результат в кеш
-            // возможно, что-то делает с прогресс-баром
+
 
             // Либо можно передавать пачкой каналы
             channels.forEach( c -> {
                 RequestService.channelStreamer.onNext( c.channelId );
-                finishProgress();
             } );
+
+            RequestService.application.getStateManager().setProperty( "request", request.getText() );
+
+            finishProgress();
+
+            setTime( "10 sec" ); // todo вермя
         } );
 
 
@@ -61,15 +100,61 @@ public class SearchActions implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        requestTime.setText( "" );
+        initRequestString();
 
-        // requestProgress.setVisible( false );
-        setProgress( 0.0 );
+        initProgress();
+
+        requestType.getSelectionModel().selectFirst();
     }
 
     private void finishProgress()
     {
         setProgress( 1.0 );
+    }
+
+    private void initProgress()
+    {
+        requestProgress.setVisible( false );
+
+        setProgress( 0.0 );
+    }
+
+    private void initRequestString()
+    {
+        Task<Void> task = new Task<Void>() {
+
+            @Override protected Void call()
+            {
+                Platform.runLater( () -> request.setText( RequestService.application.getStateManager().getProperty( "request" ).orElse( "" ).toString() ) );
+
+                return null;
+            }
+        };
+
+        new Thread( task ).start();
+    }
+
+    private void setTime(String value)
+    {
+        Task<Void> task = new Task<Void>() {
+
+            @Override protected Void call() throws Exception {
+
+                    Platform.runLater( () -> {
+                        if ( true )
+                        { // включено в настройках
+                            requestTime.setVisible( true );
+                            requestTime.setText( value );
+                        }
+                        requestProgress.setVisible( false );
+                    } );
+
+                return null;
+            }
+        };
+
+        new Thread( task ).start();
+
     }
 
     private void setProgress(double value)
@@ -81,6 +166,10 @@ public class SearchActions implements Initializable
     // thread pool
     private void restartProgress()
     {
+        requestProgress.setVisible( true );
+
+        requestTime.setVisible( false );
+
         progress = 0.0;
 
         Thread thread = new Thread( () -> {

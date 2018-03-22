@@ -37,7 +37,7 @@ public class App extends ParticleApplication
     {
         super( APPLICATION_NAME );
 
-        RequestService.init();
+        RequestService.init(getApp());
 
         settingsService.initSettings();
     }
@@ -93,14 +93,28 @@ public class App extends ParticleApplication
         return getParticle();
     }
 
-    // не работает, т.к., видимо setOnCloseRequest перетирается в другом месте
     void setOnCloseAction()
     {
         Stage stage = getPrimaryStage();
 
-        stage.setOnCloseRequest( event -> {
-            System.out.println("Close works!");
-            //CacheService.saveStorage();
+        stage.setOnHiding( event -> {
+            System.out.println("Application is closing...");
+            CacheService.saveStorage();
         } );
+    }
+
+    @Override
+    public void stop(){
+
+        try
+        {
+            super.stop();
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace();
+        }
+
+        System.out.println("Application stopped");
     }
 }

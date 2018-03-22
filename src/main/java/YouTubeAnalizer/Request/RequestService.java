@@ -4,6 +4,7 @@ import YouTubeAnalizer.API.YoutubeInteractionService;
 import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
+import com.gluonhq.particle.application.Particle;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
@@ -22,12 +23,16 @@ public class RequestService
     public static Observable<String> channelStream;
 
     public static ObservableEmitter<String> channelStreamer;
+
+    public static Particle application = null;
     
     // pool = Executors.newFixedThreadPool( 4 );
     
 
-    public static void init()
+    public static void init(Particle app)
     {
+        application = app;
+
         channelStream = Observable.create( emitter -> {
             RequestService.channelStreamer = emitter;
         } );

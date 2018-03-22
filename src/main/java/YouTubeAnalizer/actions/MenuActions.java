@@ -26,17 +26,17 @@ public class MenuActions {
 
     @ActionProxy(text="Exit", accelerator="alt+F4")
     private void exit() {
-        // System.out.println("[B]"); // не работает
+        System.out.println("exit"); // не работает, если использовать крестик
         app.exit();
     }
 
     @ActionProxy(text="About")
     private void about() {
         Alert alert = new Alert( Alert.AlertType.INFORMATION);
-        alert.setTitle("Desktop App");
-        alert.setHeaderText("About App");
+        alert.setTitle("About");
+        alert.setHeaderText("YouTube Analizer v0.2 \nAuthor: Alex Panov \n2018");
         //alert.setGraphic(new ImageView(new Image(MenuActions.class.getResource("/icon.png").toExternalForm(), 48, 48, true, true)));
-        alert.setContentText("This is a basic Desktop Application");
+        alert.setContentText("A simple app to fetch condensed info about Youtube channels");
         alert.showAndWait();
     }
 
@@ -46,6 +46,7 @@ public class MenuActions {
     {
         Stage stage = new Stage();
         Parent root = null;
+
 
 
         try {

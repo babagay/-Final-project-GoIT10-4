@@ -9,34 +9,31 @@
 <?import javafx.scene.web.*?>
 
 <AnchorPane fx:controller="YouTubeAnalizer.actions.SearchActions"
-        id="PaneSearch" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200" minWidth="-Infinity" prefWidth="1024" prefHeight="200" xmlns:fx="http://javafx.com/fxml">
+            id="PaneSearch" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="50" minWidth="-Infinity"
+            prefWidth="1000" prefHeight="50" xmlns:fx="http://javafx.com/fxml">
     <children>
 
-        <ComboBox layoutX="20.0" layoutY="10.0" prefWidth="160.0">
+        <ComboBox layoutX="20.0" layoutY="10.0" prefWidth="160.0" fx:id="requestType">
             <items>
                 <FXCollections fx:factory="observableArrayList">
-                    <String fx:value="Item 1" />
-                    <String fx:value="Item 2" />
-                    <String fx:value="Item 3" />
+                    <String fx:value="sinfle"/>
+                    <String fx:value="2"/>
+                    <String fx:value="multi"/>
+                    <String fx:value="4"/>
+                    <String fx:value="5"/>
+                    <String fx:value="6"/>
                 </FXCollections>
             </items>
         </ComboBox>
 
-        <!--<SplitMenuButton layoutX="40.0" layoutY="83.0" mnemonicParsing="false" prefWidth="153.0" text="SplitMenuButton">-->
-            <!--<items>-->
-                <!--<MenuItem mnemonicParsing="false" text="Action 1" />-->
-                <!--<MenuItem mnemonicParsing="false" text="Action 2" />-->
-            <!--</items>-->
-        <!--</SplitMenuButton>-->
+        <TextField layoutX="200.0" layoutY="10.0" prefWidth="580.0" promptText="request"
+                   text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request"/>
 
-        <TextField layoutX="200.0" layoutY="10.0" prefWidth="580.0" promptText="request" text="UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A" fx:id="request" />
+        <Button layoutX="800.0" layoutY="10.0" mnemonicParsing="false" text="Go!" onAction="#doRequest"/>
 
+        <ProgressIndicator layoutX="870.0" layoutY="10.0" prefHeight="59.0" prefWidth="56.0" progress="0.0"
+                           fx:id="requestProgress"/>
 
-
-        <Button layoutX="800.0" layoutY="10.0" mnemonicParsing="false" text="Button" onAction="#doRequest" />
-
-        <ProgressIndicator layoutX="870.0" layoutY="10.0" prefHeight="59.0" prefWidth="56.0" progress="0.0" fx:id="requestProgress" />
-
-        <Label layoutX="950.0" layoutY="10.0" text="" fx:id="requestTime" />
+        <Label layoutX="880.0" layoutY="10.0" text="" fx:id="requestTime"/>
     </children>
 </AnchorPane>
