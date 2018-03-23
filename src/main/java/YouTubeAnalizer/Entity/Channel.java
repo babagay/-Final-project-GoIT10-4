@@ -1,5 +1,8 @@
 package YouTubeAnalizer.Entity;
 
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -14,7 +17,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      * Количество подписчиков
      */
-    long followersNumber;
+    private final SimpleLongProperty followersNumber = new SimpleLongProperty(  );
 
     /**
      *  Кол-во видео на канале
@@ -34,12 +37,14 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      * Имя канала
      */
-    public String name;
+    private final SimpleStringProperty name = new SimpleStringProperty( "" );
 
     /**
      * уникальный идентификатор канала
      */
-    public String channelId;
+     private final SimpleStringProperty channelId = new SimpleStringProperty("");
+
+    private final SimpleStringProperty description = new SimpleStringProperty( "" );
 
     /**
      * Набор видео
@@ -51,18 +56,19 @@ public class Channel implements Comparable<Channel>, Serializable {
      */
     long expirationDate;
     
-    String description;
-    
+
+
+    /**
+     * Dont forget to set relevant expirationDate after object has been created
+     */
     public Channel (String channelId)
     {
-        this.channelId = channelId;
-        
-        // todo сгенерить expirationDate, если она не генерится при сохранении в кеш
+        this(channelId, 1);
     }
 
     public Channel (String channelId, int expirationDate)
     {
-        this.channelId = channelId;
+        setChannelId( channelId );
         this.expirationDate = expirationDate;
     }
 
@@ -72,6 +78,11 @@ public class Channel implements Comparable<Channel>, Serializable {
     }
 
     public long getFollowersNumber()
+    {
+        return followersNumber.get();
+    }
+
+    public SimpleLongProperty followersNumberProperty()
     {
         return followersNumber;
     }
@@ -88,12 +99,17 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public String getName()
     {
-        return name;
+        return name.get();
     }
 
     public String getChannelId()
     {
-        return channelId;
+        return channelId.get();
+    }
+
+    private void setChannelId(String channelId)
+    {
+         this.channelId.set( channelId );
     }
 
     public Set<Video> getVideos()
@@ -113,9 +129,9 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public void setFollowersNumber(long followersNumber)
     {
-        this.followersNumber = followersNumber;
+        this.followersNumber.set( followersNumber );
     }
- 
+
     public void setTotalViewsNumber(long totalViewsNumber)
     {
         this.totalViewsNumber = totalViewsNumber;
@@ -133,9 +149,19 @@ public class Channel implements Comparable<Channel>, Serializable {
     
     public void setDescription (String description)
     {
-        this.description = description;
+        this.description.set( description );
     }
-    
+
+    public String getDescription()
+    {
+        return description.get();
+    }
+
+    public SimpleStringProperty descriptionProperty()
+    {
+        return description;
+    }
+
     public long getTotalCommentsNumber ()
     {
         return totalCommentsNumber;
@@ -148,7 +174,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     
     public void setName (String name)
     {
-        this.name = name;
+        this.name.set( name );
     }
     
     public void setVideosNumber (long videosNumber)
@@ -183,22 +209,22 @@ public class Channel implements Comparable<Channel>, Serializable {
     @Override
     public int compareTo(Channel channel)
     {
-        if ( channelId.compareTo( channel.channelId ) > 0 )
+        if ( getChannelId().compareTo( channel.getChannelId() ) > 0 )
         {
             return 1;
         }
 
-        if ( channelId.compareTo( channel.channelId ) < 0 )
+        if ( getChannelId().compareTo( channel.getChannelId() ) < 0 )
         {
             return -1;
         }
 
-        if ( channelId.compareTo( channel.channelId ) == 0 && !channelId.equals( channel.channelId ) )
+        if ( getChannelId().compareTo( channel.getChannelId() ) == 0 && !channelId.equals( channel.channelId ) )
         {
             return -1;
         }
 
-        if ( channelId.compareTo( channel.channelId ) == 0 && channelId.equals( channel.channelId ) )
+        if ( getChannelId().compareTo( channel.getChannelId() ) == 0 && channelId.equals( channel.channelId ) )
         {
             if ( hashCode() > channel.hashCode() )
             {

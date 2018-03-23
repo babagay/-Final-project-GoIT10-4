@@ -5,10 +5,13 @@ import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
+import io.reactivex.Emitter;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -20,20 +23,27 @@ public class RequestService
 {
     private static YoutubeInteractionService youtubeInteractionService = YoutubeInteractionService.getInstance();
 
-    public static Observable<String> channelStream;
+    public static Observable<ArrayList<Channel>> channelStream;
 
-    public static ObservableEmitter<String> channelStreamer;
+    public static ObservableEmitter<ArrayList<Channel>> channelStreamer;
 
     public static Particle application = null;
-    
+
+    // todo
+    // создать свой пул.
+    // Однако, здесь https://allegro.tech/2014/10/async-rest.html
+    // рекомендуют юзать RxJersey https://jersey.github.io/#rx-client.java8
+    // https://stackoverflow.com/questions/39469435/working-with-jersey-client-in-rx-style
     // pool = Executors.newFixedThreadPool( 4 );
-    
+    public static ForkJoinPool pool = ForkJoinPool.commonPool();
+
 
     public static void init(Particle app)
     {
         application = app;
 
         channelStream = Observable.create( emitter -> {
+            // This code will be run when subscriber appears
             RequestService.channelStreamer = emitter;
         } );
     }
@@ -71,11 +81,7 @@ public class RequestService
                 .supplyAsync( () -> {
                             // worker-1
                             return youtubeInteractionService.getChannels( request );
-                        }, ForkJoinPool.commonPool()
-                        // todo создать свой пул.
-                        // Однако, здесь https://allegro.tech/2014/10/async-rest.html
-                        // рекомендуют юзать RxJersey https://jersey.github.io/#rx-client.java8
-                        // https://stackoverflow.com/questions/39469435/working-with-jersey-client-in-rx-style
+                        }, pool
                 )
                 // [?] Почему не работает код: return youtubeInteractionService.mapChannels( w );
                 .thenComposeAsync( w -> {
@@ -86,12 +92,13 @@ public class RequestService
                             } );
                         }
                 )
-                .whenComplete( (r, throwable) -> {
+                .whenComplete( (result, throwable) -> {
                             // worker-2
                             if ( throwable == null ) {
-                                // OK
+                                // OK - result is got
                             }
                             else {
+                                System.out.println("error has been occurred during channel getting");
                                 throw new RuntimeException( throwable );
                             }
                         }
@@ -143,14 +150,28 @@ public class RequestService
 
                                         ArrayList<Channel> list = channelStream.collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
 
-                                        callback.accept( list );
+                                        try
+                                        {
+                                            callback.accept( list );
+
+                                        } catch ( Throwable t )
+                                        {
+                                            // todo
+                                            // [?] можно ранее сформировать канал ошибок и здесь эмитить в него
+                                            System.out.println("Error occurred during callback running. " + t);
+                                            t.getStackTrace();
+                                        }
 
                                         return null;
                                     } );
                         },
                         throwable -> {
                             // todo
+                            // обработка ошибок
+                            System.out.println("Throwable was thrown");
                         }
                 );
     }
+
+
 }

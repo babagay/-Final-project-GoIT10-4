@@ -1,25 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import YouTubeAnalizer.view.ChannelGrid?>
 
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<AnchorPane
+        maxHeight="-Infinity" maxWidth="-Infinity"
+        minHeight="-Infinity" minWidth="-Infinity"
+        prefHeight="4000.0" prefWidth="841.0"
+        xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="YouTubeAnalizer.actions.ChannelContainerActions">
+    <children>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="641.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
-   <children>
-      <TableView layoutX="14.0" layoutY="81.0" prefHeight="200.0" prefWidth="602.0">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-            <TableColumn prefWidth="75.0" text="C3" />
-            <TableColumn prefWidth="75.0" text="C4" />
-            <TableColumn prefWidth="75.0" text="C5" />
-            <TableColumn prefWidth="75.0" text="C6" />
-            <TableColumn prefWidth="75.0" text="C7" />
-            <TableColumn prefWidth="75.0" text="C8" />
-        </columns>
-      </TableView>
-      <Button layoutX="21.0" layoutY="56.0" mnemonicParsing="false" text="Button" />
-   </children>
+        <ChannelGrid fx:id="grid" layoutX="14.0" layoutY="41.0" prefHeight="800.0" prefWidth="802.0">
+            <columns>
+                <TableColumn prefWidth="110.0" text="Channel Id" fx:id="channelIdColumn">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="channelId"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="name"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Description">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="description"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Followers Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="followersNumber"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+            </columns>
+
+            <sortOrder>
+                <fx:reference source="channelIdColumn"></fx:reference>
+            </sortOrder>
+        </ChannelGrid>
+
+    </children>
 </AnchorPane>

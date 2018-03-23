@@ -1,5 +1,6 @@
 package YouTubeAnalizer.actions;
 
+import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.state.StateManager;
@@ -14,6 +15,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 @ParticleActions
@@ -87,12 +89,10 @@ public class SearchActions implements Initializable
             // отдает результат в кеш
 
 
-            // Либо можно передавать пачкой каналы
-            channels.forEach( c -> {
-                RequestService.channelStreamer.onNext( c.channelId );
-            } );
+            RequestService.channelStreamer.onNext( channels );
 
-            RequestService.application.getStateManager().setProperty( "request", request.getText() );
+
+            storeRequest( request.getText() );
 
             finishProgress();
 
@@ -110,6 +110,11 @@ public class SearchActions implements Initializable
         initProgress();
 
         requestType.getSelectionModel().selectFirst();
+    }
+
+    private void storeRequest(String request)
+    {
+        RequestService.application.getStateManager().setProperty( "request", request );
     }
 
     private void finishProgress()

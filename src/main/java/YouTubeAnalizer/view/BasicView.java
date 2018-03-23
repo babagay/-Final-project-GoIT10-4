@@ -5,6 +5,7 @@ import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 //import YouTubeAnalizer.ServiceExample;
 import com.gluonhq.particle.annotation.ParticleView;
+import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
 import javafx.event.ActionEvent;
@@ -14,6 +15,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -38,6 +41,9 @@ public class BasicView implements View
     
     @Inject
     private StateManager stateManager;
+
+    @Inject
+    private Particle app;
 
     private final VBox rootContainer = new VBox(0);
 
@@ -107,29 +113,24 @@ public class BasicView implements View
 
         try
         {
-            channelInfoBox.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-channels-grid.fxml")) ));
+            rootContainer.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-channels-grid.fxml")) ));
         }
         catch ( IOException e )
         {
             e.printStackTrace();
         }
-
-        rootContainer.getChildren().addAll( channelInfoBox );
-        rootContainer.setAlignment( Pos.CENTER );
     }
 
     private void makeSearchForm()
     {
         try
         {
-            rootContainer.getChildren().addAll( new ScrollPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-search.form.fxml")) ));
+            rootContainer.getChildren().addAll( new BorderPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-search.form.fxml")) ));
         }
         catch ( IOException e )
         {
             e.printStackTrace();
         }
-
-        /// rootContainer.getChildren().add( requestContainer );
     }
 
 /*
@@ -179,28 +180,25 @@ public class BasicView implements View
      */
     private void handleGetChannel (ActionEvent event)
     {
-        p2.setProgress(0.0F);
-        //serviceExample.restart();
-        System.out.println("serviceExample restart()");
-
-
-
-        // todo
-        // время начала запроса
-
-        String request = "UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A";
-
-        RequestService.get( request, channels -> {
-
-            // todo
-            // render
-            // запоминает время окончания запроса
-            // отдает результат в кеш
-            // возможно, что-то делает с прогресс-баром
-
-            // test
-            channels.forEach( c -> System.out.println( c.channelId + " :)") );
-        });
+//        p2.setProgress(0.0F);
+//        //serviceExample.restart();
+//        System.out.println("serviceExample restart()");
+//
+//
+//
+//        String request = "UCb6roUNSl5kXdSMkcyoxfOg,UCs6Agc6DvG7dZ8X4wZiGR1A";
+//
+//        RequestService.get( request, channels -> {
+//
+//            // todo
+//            // render
+//            // запоминает время окончания запроса
+//            // отдает результат в кеш
+//            // возможно, что-то делает с прогресс-баром
+//
+//            // test
+//            channels.forEach( c -> System.out.println( c.channelId + " :)") );
+//        });
 
 
 

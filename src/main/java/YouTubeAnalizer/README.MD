@@ -1,5 +1,13 @@
  [todo]
-         * Можно сделать окно Help  с инструкцией 
+Можно сделать окно Help  с инструкцией
+         
+ [TableView]
+ https://docs.oracle.com/javase/8/javafx/fxml-tutorial/fxml_tutorial_intermediate.htm
+ https://docs.oracle.com/javase/8/javafx/properties-binding-tutorial/binding.htm#JFXBD107 
+
+[Flowable]
+http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Flowable.html
+
 
 Типы запросов
 * [1]

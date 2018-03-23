@@ -125,9 +125,9 @@ public final class YoutubeInteractionService {
     // todo
     public YouTubeAnalizer.Entity.Channel mapChannel(Channel channel){
         YouTubeAnalizer.Entity.Channel channel1 = new YouTubeAnalizer.Entity.Channel( channel.getId() );
-        //                    channel1.setFollowersNumber( channel.getStatistics().getSubscriberCount().longValueExact() );
-        //                    channel1.setName( channel.getBrandingSettings().getChannel().getTitle() );
-        //                    channel1.setDescription( channel.getBrandingSettings().getChannel().getDescription() );
+                            channel1.setFollowersNumber( channel.getStatistics().getSubscriberCount().longValueExact() );
+                            channel1.setName( channel.getBrandingSettings().getChannel().getTitle() );
+                            channel1.setDescription( channel.getBrandingSettings().getChannel().getDescription() );
         //                    channel1.setTotalCommentsNumber( channel.getStatistics().getCommentCount().longValueExact() );
         //                    channel1.setVideosNumber( channel.getStatistics().getVideoCount().longValueExact() );
         //                    channel1.setTotalViewsNumber( channel.getStatistics().getViewCount().longValueExact() );

@@ -329,7 +329,7 @@ public enum CacheService
                         channelToStore -> {
 
                             // найти объект с заданным channelId в L2. Если он есть, это обновление. Если нет - добавление.
-                            Channel channel = Storage.getChannelById( channelToStore.channelId );
+                            Channel channel = Storage.getChannelById( channelToStore.getChannelId() );
 
                             if ( channel != null )
                             {
@@ -358,7 +358,7 @@ public enum CacheService
                                 Storage.getInstance().putChannel( channelToStore );
 
                                 // Создать ноду, обновить время протухания.
-                                Node node = new Node( channelToStore.channelId, Node.getFactory().generateChannelSet(channelToStore) );
+                                Node node = new Node( channelToStore.getChannelId(), Node.getFactory().generateChannelSet(channelToStore) );
                                 node.recalcExpirationDate();
 
                                 // положить ноду в L1.

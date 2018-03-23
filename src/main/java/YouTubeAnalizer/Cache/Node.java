@@ -105,7 +105,7 @@ public class Node implements Comparable<Node>
 
     boolean containsChannel(Channel channel)
     {
-        return channels.stream().anyMatch( channel1 -> channel1.channelId.equals( channel.channelId ) );
+        return channels.stream().anyMatch( channel1 -> channel1.getChannelId().equals( channel.getChannelId() ) );
     }
     
     boolean isDead()
