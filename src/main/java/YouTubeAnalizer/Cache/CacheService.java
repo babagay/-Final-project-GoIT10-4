@@ -146,7 +146,19 @@ public enum CacheService
             setTask( request, channels );
         }
     }
-
+    
+    public final static void set(String request, ArrayList<Channel> channels)
+    {
+        Channel[] rawChannels = new Channel[channels.size()];
+        
+        int i = 0;
+        for ( Channel channel: channels ){
+            rawChannels[i++] = channel;
+        }
+        
+        set( request, rawChannels );
+    }
+    
     /**
      * Разогрев кеша в отдельном потоке
      */

@@ -8,14 +8,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -125,9 +120,13 @@ final public class Storage {
         }
 
         // init L2
-        if ( !json.equals( "" ) ){
-            Gson gson = new GsonBuilder().create();
-            repository = gson.fromJson( json, Repository.class );
+        try {
+            if ( !json.equals( "" ) ) {
+                Gson gson = new GsonBuilder().create();
+                repository = gson.fromJson( json, Repository.class );
+            }
+        } catch ( Throwable throwable ){
+            throwable.printStackTrace();
         }
 
         initLevel1();
@@ -159,13 +158,17 @@ final public class Storage {
         {
             FileWriter fileWriter = new FileWriter( getFilePath() );
 
-            writer = new BufferedWriter( fileWriter );
+            writer = new BufferedWriter( fileWriter  );
+    
+            OutputStreamWriter
+                    writer2 =
+                    new OutputStreamWriter( new FileOutputStream( getFilePath() ), Charset.forName( "UTF-8" ) );
 
-            writer.write( s );
+            writer2.write( s );
 
-            writer.flush();
+            writer2.flush();
 
-            writer.close();
+            writer2.close();
         }
         catch ( IOException e )
         {

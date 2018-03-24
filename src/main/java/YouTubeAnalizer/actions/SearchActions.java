@@ -1,5 +1,6 @@
 package YouTubeAnalizer.actions;
 
+import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 import com.gluonhq.particle.annotation.ParticleActions;
@@ -87,6 +88,7 @@ public class SearchActions implements Initializable
             // вычисляет время окончания запроса
 
             // отдает результат в кеш
+            CacheService.set( request.getText(), channels );
 
 
             RequestService.channelStreamer.onNext( channels );
