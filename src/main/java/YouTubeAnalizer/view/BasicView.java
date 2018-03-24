@@ -35,9 +35,6 @@ import java.util.ArrayList;
 @ParticleView(name = "basic", isDefault = true)
 public class BasicView implements View
 {
-    private static YoutubeInteractionService youtubeInteractionService = YoutubeInteractionService.getInstance();
-
-    //final ServiceExample serviceExample = new ServiceExample();
     
     @Inject
     private StateManager stateManager;
@@ -50,17 +47,14 @@ public class BasicView implements View
     private Pane requestContainer = new HBox( 0 );
 
     private Pane channelInfoBox = new VBox(  );
-
-    Button storeCacheButton, addChannelButton, getNodeButton, getChannelButton;
-
-    ProgressIndicator p2 = new ProgressIndicator(  );
+ 
+    
+    
 
     @Override
     public void init() {
 
-        requestContainer.setMinHeight( 60 );
-        requestContainer.setBorder( null ); // todo убрать границы
-        requestContainer.setPickOnBounds( false ); // todo сделать ,чтоб не выделялись границы при фокусе
+    
 
 //        getChannelButton = new Button();
 //        getChannelButton.setText( "get Channel from Ytube" );
@@ -86,10 +80,7 @@ public class BasicView implements View
 
         stateManager.setPersistenceMode(StateManager.PersistenceMode.USER);
 
-
-
-        // Через stateManager можно хранить запросы
-        addFilePath(stateManager.getProperty("CacheFilePath").orElse("").toString());
+ 
     }
 
 
@@ -100,14 +91,7 @@ public class BasicView implements View
         return rootContainer;
     }
 
-    /**
-     * [!] Just example
-     */
-    public void addFilePath(String cacheFilePath) {
-        // storeCacheButton.setText(cacheFilePath.isEmpty() ? "..." : cacheFilePath);
-
-        stateManager.setProperty("CacheFilePath", cacheFilePath);
-    }
+    
 
     private void makeChannelContainer(){
 
@@ -123,6 +107,7 @@ public class BasicView implements View
 
     private void makeSearchForm()
     {
+        //rootContainer.setAlignment( Pos.TOP_LEFT );
         try
         {
             rootContainer.getChildren().addAll( new BorderPane( FXMLLoader.load(YouTubeAnalizer.App.class.getResource("ui-search.form.fxml")) ));
@@ -131,6 +116,8 @@ public class BasicView implements View
         {
             e.printStackTrace();
         }
+        
+       
     }
 
 /*

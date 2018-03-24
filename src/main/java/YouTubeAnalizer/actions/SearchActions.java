@@ -3,6 +3,8 @@ package YouTubeAnalizer.actions;
 import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
+import YouTubeAnalizer.Settings.Settings;
+import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.annotation.ParticleActions;
 import com.gluonhq.particle.state.StateManager;
 import javafx.application.Platform;
@@ -22,7 +24,8 @@ import java.util.ResourceBundle;
 @ParticleActions
 public class SearchActions implements Initializable
 {
-
+    private static Settings settings = SettingsService.getInstance().getSettings();
+    
     private StateManager stateManager;
 
     @FXML
@@ -52,7 +55,7 @@ public class SearchActions implements Initializable
     private final static int   GET_MULTI_CHANNEL_WIDE_INFO_REQUEST = 5;
 
     @FXML
-    protected void doRequest(ActionEvent event)
+    protected void onRequestAction (ActionEvent event)
     {
         restartProgress();
 
@@ -145,28 +148,29 @@ public class SearchActions implements Initializable
 
         new Thread( task ).start();
     }
-
-    private void setTime(String value)
+    
+    private void setTime (String value)
     {
-        Task<Void> task = new Task<Void>() {
-
-            @Override protected Void call() throws Exception {
-
+        if ( settings.isShownRequestDuration() ) {
+            Task<Void> task = new Task<Void>() {
+                
+                @Override
+                protected Void call () throws Exception
+                {
                     Platform.runLater( () -> {
-                        if ( true )
-                        { // включено в настройках
-                            requestTime.setVisible( true );
-                            requestTime.setText( value );
-                        }
+                        
+                        requestTime.setVisible( true );
+                        requestTime.setText( value );
+                        
                         requestProgress.setVisible( false );
                     } );
-
-                return null;
-            }
-        };
-
-        new Thread( task ).start();
-
+                    
+                    return null;
+                }
+            };
+            
+            new Thread( task ).start();
+        }
     }
 
     private void setProgress(double value)

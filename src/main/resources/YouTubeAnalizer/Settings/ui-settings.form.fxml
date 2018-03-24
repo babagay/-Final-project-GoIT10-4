@@ -15,7 +15,7 @@
 <GridPane alignment="center" hgap="10" styleClass="root" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="YouTubeAnalizer.actions.SettingsActions">
     <padding><Insets bottom="10" left="25" right="25" top="25" /></padding>
 
-    <Text id="settings-text" text="Settings" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
+    <!--<Text id="settings-text" text="Settings" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />-->
 
     <Label text="Cache File (Path + Filename):" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
@@ -34,13 +34,13 @@
     <CheckBox fx:id="showRequestDuration" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
     <HBox alignment="bottom_right" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5">
-        <Button fx:id="storeSettingsButton" onAction="#handleSubmitButtonAction" text="Save" />
+        <Button fx:id="storeSettingsButton" onAction="#onStoreSettingsAction" text="Save" />
     </HBox>
 
     <Text fx:id="actiontarget" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
     <stylesheets>
-        <URL value="@../actions/Settings.css" />
+        <!--<URL value="@../actions/Settings.css" />-->
     </stylesheets>
    <columnConstraints>
       <ColumnConstraints />

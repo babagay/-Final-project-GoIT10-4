@@ -5,16 +5,12 @@ import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
-import io.reactivex.Emitter;
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -53,7 +49,7 @@ public class RequestService
      */
     public static ArrayList<Channel> getCachedChannels(String request)
     {
-        if ( SettingsService.getInstance().getSettings().isUseCache() )
+        if ( SettingsService.getInstance().getSettings().isUsedCache() )
         {
             // если включен кеш , пробуем взять из кеша сперва
             ArrayList<Channel> channels = CacheService.get( request );
