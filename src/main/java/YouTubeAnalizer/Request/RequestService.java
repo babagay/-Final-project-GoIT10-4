@@ -135,6 +135,7 @@ public class RequestService
                 .map( channelListOptional -> {
                     if ( channelListOptional.isPresent() )
                     {
+                        System.out.println("Результат взят из кеша");
                         callback.accept( channelListOptional.get() );
                     }
 

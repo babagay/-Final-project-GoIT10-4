@@ -17,7 +17,9 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      * Количество подписчиков
      */
-    private final SimpleLongProperty followersNumber = new SimpleLongProperty(  );
+    transient private final SimpleLongProperty followersNumber = new SimpleLongProperty(  );
+
+    private long followersNumberCached;
 
     /**
      *  Кол-во видео на канале
@@ -37,29 +39,40 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      * Имя канала
      */
-    private final SimpleStringProperty name = new SimpleStringProperty( "" );
+    transient private final SimpleStringProperty name = new SimpleStringProperty( "" );
+
+    private String nameCached;
 
     /**
      * уникальный идентификатор канала
      */
-     private final SimpleStringProperty channelId = new SimpleStringProperty("");
+    transient private final SimpleStringProperty channelId = new SimpleStringProperty("");
 
-    private final SimpleStringProperty description = new SimpleStringProperty( "" );
+    private String channelIdCached;
+
+    transient private final SimpleStringProperty description = new SimpleStringProperty( "" );
+
+    private String descriptionCached;
 
     /**
      * Набор видео
      */
     Set<Video> videos;
 
+    boolean needToBeRestoredFromCahce = false;
+
     /**
      * Время протухания, сек.
      */
     long expirationDate;
-    
 
+    public Channel(boolean restoreFromCache)
+    {
+        needToBeRestoredFromCahce = restoreFromCache;
+    }
 
     /**
-     * Dont forget to set relevant expirationDate after object has been created
+     * Don't forget to set relevant expirationDate after object has been created
      */
     public Channel (String channelId)
     {
@@ -70,6 +83,22 @@ public class Channel implements Comparable<Channel>, Serializable {
     {
         setChannelId( channelId );
         this.expirationDate = expirationDate;
+    }
+
+    /**
+     * Extra deserialization
+     */
+    public void restoreChannel()
+    {
+//        if ( needToBeRestoredFromCahce )
+//        {
+            name.set( nameCached );
+            followersNumber.set( followersNumberCached );
+            channelId.set( channelIdCached );
+            description.set( descriptionCached );
+
+            needToBeRestoredFromCahce = false;
+//        }
     }
 
     public LocalDateTime getCreationDate()
@@ -109,6 +138,7 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     private void setChannelId(String channelId)
     {
+        channelIdCached = channelId;
          this.channelId.set( channelId );
     }
 
@@ -129,6 +159,7 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public void setFollowersNumber(long followersNumber)
     {
+        followersNumberCached = followersNumber;
         this.followersNumber.set( followersNumber );
     }
 
@@ -149,6 +180,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     
     public void setDescription (String description)
     {
+        descriptionCached = description;
         this.description.set( description );
     }
 
@@ -174,6 +206,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     
     public void setName (String name)
     {
+        nameCached = name;
         this.name.set( name );
     }
     
@@ -202,7 +235,7 @@ public class Channel implements Comparable<Channel>, Serializable {
     public String toString()
     {
         return "Channel{" +
-                "channelId='" + channelId + '\'' +
+                "channelId='" + channelId.get() + '\'' +
                 '}';
     }
 

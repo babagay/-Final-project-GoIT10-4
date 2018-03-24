@@ -1,5 +1,5 @@
 {
-  "expirationTime": 1000,
+  "expirationTime": 8000,
   "useCache": true,
   "showRequestDuration": false,
   "cacheDirectory": "D:\\projects\\YouTube-analizer",

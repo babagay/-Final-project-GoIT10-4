@@ -1,16 +1,16 @@
 package YouTubeAnalizer.Cache;
 
 import YouTubeAnalizer.Entity.Channel;
-import YouTubeAnalizer.Settings.Settings;
+import YouTubeAnalizer.Entity.ChannelCreator;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.sun.javafx.binding.ExpressionHelper;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +34,10 @@ import java.util.stream.Collectors;
  * Объект класса Storage.Repository сбрасывается на диск. Например, при закрытии приложения.
  *
  * Запросы, сохраняемые в кеше, имеют вид строки: "channelA,channelB,channelC"
+ *
+ * fixme
+ * [] не корректно работает с русской кодировкой
+ * [] что-то не то с часовыми поясами - приходится задавать преувеличенные значения expirationTime
  */
 final public class Storage {
 
@@ -122,12 +126,18 @@ final public class Storage {
         // init L2
         try {
             if ( !json.equals( "" ) ) {
-                Gson gson = new GsonBuilder().create();
+                Gson gson = new GsonBuilder()
+                        .registerTypeAdapter( Channel.class, new ChannelCreator() )
+                        .create();
                 repository = gson.fromJson( json, Repository.class );
             }
         } catch ( Throwable throwable ){
             throwable.printStackTrace();
         }
+
+        repository.channels.parallelStream().forEach( Channel::restoreChannel );
+
+        repository.channels.stream().forEach( System.out::println );
 
         initLevel1();
 
@@ -225,7 +235,8 @@ final public class Storage {
      */
     void restoreNodesFromL2()
     {
-        Storage.getInstance().getChannels().stream()
+        Storage.getInstance()
+                .getChannels().stream()
                 .forEach( channel -> {
                     Node node = Node.getFactory().create( channel.getChannelId(), channel );
                     putNode( node );

@@ -89,7 +89,7 @@ public final class YoutubeInteractionService {
                 .build();
     }
 
-    // При слабом инете бывает  connect timed out
+    // При слабом инете бывает: connect timed out
     public List<Channel> getChannels(String request)
     {
         YouTube youtube;
