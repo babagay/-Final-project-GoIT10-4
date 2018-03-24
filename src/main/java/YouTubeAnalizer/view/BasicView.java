@@ -1,22 +1,15 @@
 package YouTubeAnalizer.view;
 
-import YouTubeAnalizer.API.YoutubeInteractionService;
 import YouTubeAnalizer.Entity.Channel;
-import YouTubeAnalizer.Request.RequestService;
-//import YouTubeAnalizer.ServiceExample;
 import com.gluonhq.particle.annotation.ParticleView;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.state.StateManager;
 import com.gluonhq.particle.view.View;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -25,23 +18,15 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- *  // testing
- storeCacheButton = new Button();
- storeCacheButton.setText( "store Cache" );
- storeCacheButton.setOnAction( e -> CacheService.saveStorage() );
 
- */
+
 @ParticleView(name = "basic", isDefault = true)
 public class BasicView implements View
 {
     
     @Inject
     private StateManager stateManager;
-
-    @Inject
-    private Particle app;
-
+ 
     private final VBox rootContainer = new VBox(0);
 
     private Pane requestContainer = new HBox( 0 );
@@ -53,34 +38,12 @@ public class BasicView implements View
 
     @Override
     public void init() {
-
-    
-
-//        getChannelButton = new Button();
-//        getChannelButton.setText( "get Channel from Ytube" );
-//        getChannelButton.setOnAction( this::handleGetChannel );
-
-
-
-        // ----- ProgressIndicator -------
-//        p2.visibleProperty().bind( serviceExample.runningProperty() );
-//        serviceExample.setOnSucceeded( workerStateEvent -> {
-//            String result = serviceExample.getValue();   //here you get the return value of your service
-//            // System.out.println("Result "+ result); // "toto"
-//        } );
-//
-//        serviceExample.setOnFailed( workerStateEvent -> {
-//            //DO stuff on failed
-//        } );
-        // -------------
-
+ 
         makeSearchForm();
 
         makeChannelContainer();
 
         stateManager.setPersistenceMode(StateManager.PersistenceMode.USER);
-
- 
     }
 
 

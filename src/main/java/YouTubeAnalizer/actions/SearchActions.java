@@ -1,7 +1,6 @@
 package YouTubeAnalizer.actions;
 
 import YouTubeAnalizer.Cache.CacheService;
-import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 import YouTubeAnalizer.Settings.Settings;
 import YouTubeAnalizer.Settings.SettingsService;
@@ -18,7 +17,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 @ParticleActions
@@ -41,7 +39,9 @@ public class SearchActions implements Initializable
     private Label requestTime;
 
     private volatile double progress = 0.0;
-
+    
+    private long startRequestTime;
+    
     public SearchActions()
     {
         stateManager = RequestService.application.getStateManager();
@@ -83,25 +83,20 @@ public class SearchActions implements Initializable
         // todo
         // сформировать нужный запрос
         // В зависимости от запроса, своя валидация
+    
+        startRequestTime = System.currentTimeMillis();
 
         RequestService.get( request.getText(), channels -> {
-
-            // todo
-
-            // вычисляет время окончания запроса
-
-            // отдает результат в кеш
+ 
             CacheService.set( request.getText(), channels );
 
-
             RequestService.channelStreamer.onNext( channels );
-
 
             storeRequest( request.getText() );
 
             finishProgress();
 
-            setTime( "10 sec" ); // todo вермя
+            sightRequestDuration();
         } );
 
 
@@ -149,9 +144,12 @@ public class SearchActions implements Initializable
         new Thread( task ).start();
     }
     
-    private void setTime (String value)
+    private void sightRequestDuration ()
     {
         if ( settings.isShownRequestDuration() ) {
+    
+            long endRequestTime = System.currentTimeMillis();
+            
             Task<Void> task = new Task<Void>() {
                 
                 @Override
@@ -160,7 +158,7 @@ public class SearchActions implements Initializable
                     Platform.runLater( () -> {
                         
                         requestTime.setVisible( true );
-                        requestTime.setText( value );
+                        requestTime.setText(  (endRequestTime - startRequestTime)/1000 + " sec"  );
                         
                         requestProgress.setVisible( false );
                     } );
