@@ -36,7 +36,7 @@ public class MenuActions {
         alert.setTitle("About");
         alert.setHeaderText("YouTube Analizer v0.2 \nAuthor: Alex Panov \n2018");
         //alert.setGraphic(new ImageView(new Image(MenuActions.class.getResource("/icon.png").toExternalForm(), 48, 48, true, true)));
-        alert.setContentText("A simple app to fetch condensed info about Youtube channels");
+        alert.setContentText("A simple app to explore Youtube channels");
         alert.showAndWait();
     }
 

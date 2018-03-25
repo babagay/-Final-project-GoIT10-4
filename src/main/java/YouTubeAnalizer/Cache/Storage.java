@@ -114,7 +114,7 @@ final public class Storage {
             e.printStackTrace();
         }
 
-        try ( final InputStreamReader reader = new InputStreamReader( targetStream ) )
+        try ( final InputStreamReader reader = new InputStreamReader( targetStream, "UTF8" ) )
         {
             json = CharStreams.toString( reader );
         }
