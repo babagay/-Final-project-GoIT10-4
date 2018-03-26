@@ -10,9 +10,11 @@ import java.util.Set;
 public class Channel implements Comparable<Channel>, Serializable {
 
     /**
-     * Дата создания канала
+     * todo Дата создания канала
      */
-    LocalDateTime creationDate;
+    transient private final SimpleStringProperty creationDate = new SimpleStringProperty(  );
+
+    private LocalDateTime creationDateCached;
 
     /**
      * Количество подписчиков
@@ -24,17 +26,23 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      *  Кол-во видео на канале
      */
-    long videosNumber;
+    transient private final SimpleLongProperty videosNumber = new SimpleLongProperty(  );
+
+    long videosNumberCached;
 
     /**
      * Кол-во просмотров всех видео
      */
-    long totalViewsNumber;
+    transient private final SimpleLongProperty totalViewsNumber = new SimpleLongProperty(  );
+
+    private long totalViewsNumberCached;
 
     /**
      * Количество комментариев всех видео
      */
-    long totalCommentsNumber;
+    transient private final SimpleLongProperty totalCommentsNumber = new SimpleLongProperty(  );
+
+    private long totalCommentsNumberCached;
 
     /**
      * Имя канала
@@ -50,6 +58,9 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     private String channelIdCached;
 
+    /**
+     * Channel description
+     */
     transient private final SimpleStringProperty description = new SimpleStringProperty( "" );
 
     private String descriptionCached;
@@ -90,20 +101,25 @@ public class Channel implements Comparable<Channel>, Serializable {
      */
     public void restoreChannel()
     {
-//        if ( needToBeRestoredFromCahce )
-//        {
-            name.set( nameCached );
-            followersNumber.set( followersNumberCached );
-            channelId.set( channelIdCached );
-            description.set( descriptionCached );
+        // [?] if ( needToBeRestoredFromCahce )
 
-            needToBeRestoredFromCahce = false;
-//        }
+        name.set(nameCached);
+        channelId.set(channelIdCached);
+        description.set(descriptionCached);
+        followersNumber.set(followersNumberCached);
+        totalViewsNumber.set(totalViewsNumberCached);
+        totalCommentsNumber.set(totalCommentsNumberCached);
+        videosNumber.set(videosNumberCached);
+        creationDate.set(""); // todo
+
+        needToBeRestoredFromCahce = false;
     }
 
+    // todo
     public LocalDateTime getCreationDate()
     {
-        return creationDate;
+        return null;
+//        return creationDate.get();
     }
 
     public long getFollowersNumber()
@@ -118,12 +134,12 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public long getVideosNumber ()
     {
-        return videosNumber;
+        return videosNumber.get();
     }
 
     public long getTotalViewsNumber ()
     {
-        return totalViewsNumber;
+        return totalViewsNumber.get();
     }
 
     public String getName()
@@ -154,7 +170,8 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public void setCreationDate(LocalDateTime creationDate)
     {
-        this.creationDate = creationDate;
+        // todo
+        this.creationDate.set("");
     }
 
     public void setFollowersNumber(long followersNumber)
@@ -165,7 +182,8 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public void setTotalViewsNumber(long totalViewsNumber)
     {
-        this.totalViewsNumber = totalViewsNumber;
+        this.totalViewsNumberCached = totalViewsNumber;
+        this.totalViewsNumber.set(totalViewsNumber);
     }
 
     public void setVideos(Set<Video> videos)
@@ -196,12 +214,13 @@ public class Channel implements Comparable<Channel>, Serializable {
 
     public long getTotalCommentsNumber ()
     {
-        return totalCommentsNumber;
+        return totalCommentsNumber.get();
     }
     
     public void setTotalCommentsNumber (long totalCommentsNumber)
     {
-        this.totalCommentsNumber = totalCommentsNumber;
+        this.totalCommentsNumberCached = totalCommentsNumber;
+        this.totalCommentsNumber.set(totalCommentsNumber);
     }
     
     public void setName (String name)
@@ -212,7 +231,8 @@ public class Channel implements Comparable<Channel>, Serializable {
     
     public void setVideosNumber (long videosNumber)
     {
-        this.videosNumber = videosNumber;
+        this.videosNumberCached = videosNumber;
+        this.videosNumber.set(videosNumber);
     }
     
     /**

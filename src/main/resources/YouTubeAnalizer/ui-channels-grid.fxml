@@ -13,29 +13,53 @@
         fx:controller="YouTubeAnalizer.actions.ChannelContainerActions">
     <children>
 
-        <ChannelGrid fx:id="grid" layoutX="14.0" layoutY="41.0" prefHeight="800.0" prefWidth="802.0">
+        <ChannelGrid fx:id="grid" layoutX="14.0" layoutY="41.0" prefHeight="800.0" prefWidth="1332.0">
             <columns>
-                <TableColumn prefWidth="110.0" text="Channel Id" fx:id="channelIdColumn">
+                <TableColumn prefWidth="130.0" text="Channel Id" fx:id="channelIdColumn">
                     <cellValueFactory>
                         <PropertyValueFactory property="channelId"></PropertyValueFactory>
                     </cellValueFactory>
                 </TableColumn>
 
-                <TableColumn prefWidth="160.0" text="Name">
+                <TableColumn prefWidth="210.0" text="Name">
                     <cellValueFactory>
                         <PropertyValueFactory property="name"></PropertyValueFactory>
                     </cellValueFactory>
                 </TableColumn>
 
-                <TableColumn prefWidth="160.0" text="Description">
+                <TableColumn prefWidth="240.0" text="Description">
                     <cellValueFactory>
                         <PropertyValueFactory property="description"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="120.0" text="Creation Date">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="creationDate"></PropertyValueFactory>
                     </cellValueFactory>
                 </TableColumn>
 
                 <TableColumn prefWidth="160.0" text="Followers Number">
                     <cellValueFactory>
                         <PropertyValueFactory property="followersNumber"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Total Views Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="totalViewsNumber"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Total Comments Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="totalCommentsNumber"></PropertyValueFactory>
+                    </cellValueFactory>
+                </TableColumn>
+
+                <TableColumn prefWidth="160.0" text="Videos Number">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="videosNumber"></PropertyValueFactory>
                     </cellValueFactory>
                 </TableColumn>
 

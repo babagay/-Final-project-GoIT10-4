@@ -89,7 +89,7 @@ public final class YoutubeInteractionService {
                 .build();
     }
 
-    // При слабом инете бывает: connect timed out
+    // При слабом инете: connect timed out
     public List<Channel> getChannels(String request)
     {
         YouTube youtube;
@@ -110,10 +110,13 @@ public final class YoutubeInteractionService {
             return list;
         }
     }
-
-    public YouTubeAnalizer.Entity.Channel test(String s){
-        return new YouTubeAnalizer.Entity.Channel( "" );
+    
+    public void getVideos(YouTubeAnalizer.Entity.Channel channel)
+    {
+    
     }
+
+ 
 
     public ArrayList<YouTubeAnalizer.Entity.Channel> mapChannels(List<Channel> channels)
     {
@@ -122,15 +125,19 @@ public final class YoutubeInteractionService {
                 .collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
     }
 
-    // todo
-    public YouTubeAnalizer.Entity.Channel mapChannel(Channel channel){
-        YouTubeAnalizer.Entity.Channel channel1 = new YouTubeAnalizer.Entity.Channel( channel.getId() );
-                            channel1.setFollowersNumber( channel.getStatistics().getSubscriberCount().longValueExact() );
-                            channel1.setName( channel.getBrandingSettings().getChannel().getTitle() );
-                            channel1.setDescription( channel.getBrandingSettings().getChannel().getDescription() );
-        //                    channel1.setTotalCommentsNumber( channel.getStatistics().getCommentCount().longValueExact() );
-        //                    channel1.setVideosNumber( channel.getStatistics().getVideoCount().longValueExact() );
-        //                    channel1.setTotalViewsNumber( channel.getStatistics().getViewCount().longValueExact() );
+    /**
+     * Map com.google.api.services.youtube.model.Channel to YouTubeAnalizer.Entity.Channel
+     */
+    public YouTubeAnalizer.Entity.Channel mapChannel(Channel channel) {
+
+        YouTubeAnalizer.Entity.Channel channel1 = new YouTubeAnalizer.Entity.Channel(channel.getId());
+        channel1.setFollowersNumber(channel.getStatistics().getSubscriberCount().longValueExact());
+        channel1.setName(channel.getBrandingSettings().getChannel().getTitle());
+        channel1.setDescription(channel.getBrandingSettings().getChannel().getDescription());
+        channel1.setTotalCommentsNumber(channel.getStatistics().getCommentCount().longValueExact());
+        channel1.setVideosNumber(channel.getStatistics().getVideoCount().longValueExact());
+        channel1.setTotalViewsNumber(channel.getStatistics().getViewCount().longValueExact());
+        // channel1.setCreationDate(); // todo
         return channel1;
     }
     

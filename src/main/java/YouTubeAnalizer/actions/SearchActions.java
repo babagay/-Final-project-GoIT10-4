@@ -1,6 +1,7 @@
 package YouTubeAnalizer.actions;
 
 import YouTubeAnalizer.Cache.CacheService;
+import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 import YouTubeAnalizer.Settings.Settings;
 import YouTubeAnalizer.Settings.SettingsService;
@@ -17,6 +18,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 @ParticleActions
@@ -42,6 +44,10 @@ public class SearchActions implements Initializable
     
     private long startRequestTime;
     
+    private boolean shortInfoRequest = true;
+    
+    private String requestFiltered;
+    
     public SearchActions()
     {
         stateManager = RequestService.application.getStateManager();
@@ -53,53 +59,73 @@ public class SearchActions implements Initializable
     private final static int  GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST = 3;
     private final static int     GET_TWO_CHANNEL_WIDE_INFO_REQUEST = 4;
     private final static int   GET_MULTI_CHANNEL_WIDE_INFO_REQUEST = 5;
-
+    
+    /**
+     * todo Валидация
+     */
     @FXML
-    protected void onRequestAction (ActionEvent event)
+    protected void onRequestAction (ActionEvent event) throws Exception
     {
         restartProgress();
-
+    
+        String[] textArr;
+        
         switch ( requestType.getSelectionModel().getSelectedIndex() ){
             case GET_SINGLE_CHANNEL_SHORT_INFO_REQUEST:
-                System.out.println("sing");
+                shortInfoRequest = true;
+                requestFiltered = request.getText().split( "," )[0];
                 break;
             case GET_TWO_CHANNEL_SHORT_INFO_REQUEST:
-                System.out.println("tw");
+                shortInfoRequest = true;
+                textArr = request.getText().split( "," );
+                try {
+                    requestFiltered = textArr[0] + "," + textArr[1];
+                } catch ( Throwable e ){
+                    // todo
+                    // throw new Exception( "invalid input" );
+                }
                 break;
             case GET_MULTI_CHANNEL_SHORT_INFO_REQUEST:
-                System.out.println("m");
+                requestFiltered = request.getText();
+                shortInfoRequest = true;
                 break;
             case GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST:
-                System.out.println("sing");
+                shortInfoRequest = false;
                 break;
             case GET_TWO_CHANNEL_WIDE_INFO_REQUEST:
-                System.out.println("tw");
+                shortInfoRequest = false;
                 break;
             case GET_MULTI_CHANNEL_WIDE_INFO_REQUEST:
-                System.out.println("m");
+                shortInfoRequest = false;
                 break;
         }
-
-        // todo
-        // сформировать нужный запрос
-        // В зависимости от запроса, своя валидация
     
         startRequestTime = System.currentTimeMillis();
-
-        RequestService.get( request.getText(), channels -> {
- 
-            CacheService.set( request.getText(), channels );
-
-            RequestService.channelStreamer.onNext( channels );
-
-            storeRequest( request.getText() );
-
-            finishProgress();
-
-            sightRequestDuration();
-        } );
-
-
+    
+        if ( shortInfoRequest ) {
+            RequestService.get( requestFiltered, this::callback );
+        }
+        else {
+            RequestService.getWide( requestFiltered, this::callback );
+        }
+    }
+    
+    private void filter()
+    {
+       // requestFiltered = request.getText()
+    }
+    
+    private void callback(ArrayList<Channel> channels)
+    {
+        CacheService.set( request.getText(), channels );
+    
+        RequestService.channelStreamer.onNext( channels );
+    
+        storeRequest( requestFiltered );
+    
+        finishProgress();
+    
+        sightRequestDuration();
     }
 
     @Override
@@ -115,6 +141,8 @@ public class SearchActions implements Initializable
     private void storeRequest(String request)
     {
         RequestService.application.getStateManager().setProperty( "request", request );
+        
+        this.request.setText( request );
     }
 
     private void finishProgress()
@@ -196,7 +224,7 @@ public class SearchActions implements Initializable
 
                 try
                 {
-                    Thread.sleep( 50 );
+                    Thread.sleep( 100 );
                 }
                 catch ( InterruptedException e )
                 {

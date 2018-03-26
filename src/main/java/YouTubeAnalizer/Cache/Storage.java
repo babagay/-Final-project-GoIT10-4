@@ -137,8 +137,6 @@ final public class Storage {
 
         repository.channels.parallelStream().forEach( Channel::restoreChannel );
 
-        repository.channels.stream().forEach( System.out::println );
-
         initLevel1();
 
         examine();
@@ -153,8 +151,6 @@ final public class Storage {
         // и сколько объектов
     }
     
-    
-
     /**
      * Сохранить кеш в JSON-файл
      */
@@ -382,18 +378,22 @@ final public class Storage {
      * удалить из коллекции
      * удалить из реквестов
      */
-    void removeNode(Node node)
+    void removeNode (Node node)
     {
+        String request = null;
         nodes.removeIf( node1 -> node1.request.equals( node.request ) );
-        String
-                request =
-                repository.requests.parallelStream()
-                        .filter( request1 -> request1.equals( node.request ) )
-                        .findFirst()
-                        .orElseGet( null );
-        
-        if ( request != null )
-        repository.requests.remove( request );
+        try {
+            request =
+                    repository.requests.parallelStream()
+                                       .filter( request1 -> request1.equals( node.request ) )
+                                       .findFirst()
+                                       .orElseGet( null );
+        }
+        catch ( Throwable t ) {
+            t.printStackTrace();
+        }
+    
+        if ( request != null ) { repository.requests.remove( request ); }
     }
 
     void removeChannel(Channel channel)

@@ -13,6 +13,10 @@ import javafx.scene.Node;
  .resizable( false )
  .showAndWait() );
  */
+
+/**
+ * @deprecated
+ */
 @ParticleForm( name = "search" )
 public class SearchForm extends Form<Channel> {
     @Override

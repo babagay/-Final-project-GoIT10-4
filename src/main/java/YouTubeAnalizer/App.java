@@ -1,24 +1,15 @@
 package YouTubeAnalizer;
 
 import YouTubeAnalizer.Cache.CacheService;
-import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Request.RequestService;
 import YouTubeAnalizer.Settings.SettingsService;
-import YouTubeAnalizer.view.SearchForm;
 import com.gluonhq.particle.application.Particle;
 import com.gluonhq.particle.application.ParticleApplication;
-import com.gluonhq.particle.form.Form;
-import com.gluonhq.particle.form.FormManager;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.controlsfx.control.NotificationPane;
 
-import javax.inject.Inject;
 import java.lang.reflect.Field;
-
-import static org.controlsfx.control.action.ActionMap.actions;
 
 /**
  * https://developers.google.com/youtube/v3/code_samples/

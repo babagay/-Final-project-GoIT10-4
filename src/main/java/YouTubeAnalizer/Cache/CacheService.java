@@ -11,22 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- *
- * [!] ConcurrentSkipListSet - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
- *      или Map
- *
- * [?] надо ли после разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
- 
- *
- * todo
- * заюзать контрол Browse
- * сделать фильтр на вводимый запрос , в зависимости от типа запроса. Напр, отрбрасывать лишние каналы для типа 1
- * окно с краткой инструкцией и [issues], напр, кодировка
- *
- * [!]
- * время работы апи-запроса д.б. 10 сек
- */
+
 public enum CacheService
 {
     CACHE_SERVICE;
@@ -160,6 +145,7 @@ public enum CacheService
     
     /**
      * Разогрев кеша в отдельном потоке
+     * use pool
      */
     public final static void initStorage()
     {

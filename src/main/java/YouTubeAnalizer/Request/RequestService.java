@@ -106,19 +106,15 @@ public class RequestService
 
         return futureStream;
     }
-
-    /**
-     * todo
-     * это потребительский код?
-     * должен ли getChannels() отдавать стрим? Имеет ли смысл передавать в callback() поток?
-     *
-     * http://reactivex.io/documentation/operators.html
-     *
-     * Код внутри колбэка делает:
-     * render
-     * запоминает время окончания запроса
-     * отдает результат в кеш
-     */
+    
+    private static CompletableFuture<Stream<Channel>> getChannelsWide(String request) throws Exception
+    {
+        throw new Exception( "Not implemented" );
+//        CompletableFuture<Stream<?>> videoStream = CompletableFuture.supplyAsync( () -> {
+//            return 1;
+//        } );
+    }
+ 
     public static void get(String request, Consumer<ArrayList<Channel>> callback)
     {
         Observable.create(
@@ -131,8 +127,12 @@ public class RequestService
                 .map( channelListOptional -> {
                     if ( channelListOptional.isPresent() )
                     {
-                        System.out.println("Результат взят из кеша");
-                        callback.accept( channelListOptional.get() );
+                        try {
+                            callback.accept( channelListOptional.get() );
+                            System.out.println( "Результат взят из кеша" );
+                        } catch ( Throwable t ){
+                            t.printStackTrace();
+                        }
                     }
 
                     return channelListOptional;
@@ -168,6 +168,33 @@ public class RequestService
                             System.out.println("Throwable was thrown");
                         }
                 );
+    }
+    
+    /**
+     * todo
+     * взять все видео канала
+     * создать отдельный запрос на каждый видос канала, узнать количество каментов
+     * выполнить reduce
+     */
+    public static void getWide (String request, Consumer<ArrayList<Channel>> callback)
+    {
+        Optional<ArrayList<Channel>> cachedChannels = getCachedChannelsOpt( request );
+        try {
+            if ( cachedChannels.isPresent() ) {
+                // Взяли из кеша
+            
+                callback.accept( cachedChannels.get() );
+            
+            
+            }
+            else {
+                getChannelsWide( request );
+            }
+        }
+        catch ( Throwable t ) {
+            System.out.println(t.getMessage());
+            t.getStackTrace();
+        }
     }
 
 

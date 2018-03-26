@@ -1,6 +1,26 @@
  [todo]
 Можно сделать окно Help  с инструкцией
-         
+Запоминать выбор из списка
+окно с краткой инструкцией и [issues] 
+Проблема, когда мы взяли канал из кеша на запросе типа 4-5-6, и не известно, был ли подсчитан commentsNumber
+сделать фильтр на вводимый запрос , в зависимости от типа запроса. Напр, отрбрасывать лишние каналы для типа 1
+[?] надо ли после разогрева запустить рефреш кэша в отдельном потоке или встроить его в разогрев
+       заюзать контрол Browse  
+Создать единый канал ошибок
+[!] ConcurrentSkipListSet - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
+          *      или Map
+          
+          
+[!]
+ время работы апи-запроса д.б. 10 сек
+ 
+ 
+ UCYfdidRxbB8Qhf0Nx7ioOYw
+ UCYfdidRxbB8Qhf0Nx7ioOYw,UClgRkhTL3_hImCAmdLfDE4g
+ UCYfdidRxbB8Qhf0Nx7ioOYw,UClgRkhTL3_hImCAmdLfDE4g,UC-9-kyTW8ZkZNDHQJ6FgpwQ
+ UCYfdidRxbB8Qhf0Nx7ioOYw,UClgRkhTL3_hImCAmdLfDE4g,UC-9-kyTW8ZkZNDHQJ6FgpwQ,UCzuqhhs6NWbgTzMuM09WKDQ
+
+          
  [TableView]
  https://docs.oracle.com/javase/8/javafx/fxml-tutorial/fxml_tutorial_intermediate.htm
  https://docs.oracle.com/javase/8/javafx/properties-binding-tutorial/binding.htm#JFXBD107 
