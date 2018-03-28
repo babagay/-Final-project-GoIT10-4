@@ -12,10 +12,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,6 +25,9 @@ public class SearchActions implements Initializable
     
     private StateManager stateManager;
 
+    @FXML
+    private Button goButton;
+    
     @FXML
     private ComboBox<String> requestType;
 
@@ -66,10 +66,14 @@ public class SearchActions implements Initializable
     @FXML
     protected void onRequestAction (ActionEvent event) throws Exception
     {
+        goButton.setDisable( true );
+        
         restartProgress();
     
         String[] textArr;
         
+        // todo
+        // отрефакторить switch
         switch ( requestType.getSelectionModel().getSelectedIndex() ){
             case GET_SINGLE_CHANNEL_SHORT_INFO_REQUEST:
                 shortInfoRequest = true;
@@ -82,6 +86,7 @@ public class SearchActions implements Initializable
                     requestFiltered = textArr[0] + "," + textArr[1];
                 } catch ( Throwable e ){
                     // todo
+                    // бросать в канал ошибок
                     // throw new Exception( "invalid input" );
                 }
                 break;
@@ -90,12 +95,15 @@ public class SearchActions implements Initializable
                 shortInfoRequest = true;
                 break;
             case GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST:
+                requestFiltered = request.getText();
                 shortInfoRequest = false;
                 break;
             case GET_TWO_CHANNEL_WIDE_INFO_REQUEST:
+                requestFiltered = request.getText();
                 shortInfoRequest = false;
                 break;
             case GET_MULTI_CHANNEL_WIDE_INFO_REQUEST:
+                requestFiltered = request.getText();
                 shortInfoRequest = false;
                 break;
         }
@@ -110,6 +118,7 @@ public class SearchActions implements Initializable
         }
     }
     
+    // not used
     private void filter()
     {
        // requestFiltered = request.getText()
@@ -126,6 +135,8 @@ public class SearchActions implements Initializable
         finishProgress();
     
         sightRequestDuration();
+        
+        goButton.setDisable( false );
     }
 
     @Override

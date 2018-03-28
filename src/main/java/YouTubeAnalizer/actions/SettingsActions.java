@@ -45,7 +45,11 @@ public class SettingsActions implements Initializable{
     
         File cacheDir = new File( cacheFilePath.getText()).getParentFile();
         
-        settingsService.getSettings().setCacheDirectory( cacheDir.toString() );
+        if ( cacheDir ==  null ){
+            settingsService.getSettings().setCacheDirectory( System.getProperty("user.dir") );
+        } else {
+            settingsService.getSettings().setCacheDirectory( cacheDir.toString() );
+        }
 
         settingsService.storeSettings();
     

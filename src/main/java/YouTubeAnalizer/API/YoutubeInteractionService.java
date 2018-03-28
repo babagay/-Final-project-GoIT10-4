@@ -15,14 +15,13 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.YouTubeScopes;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.SearchListResponse;
+import com.google.api.services.youtube.model.SearchResult;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 //import static YouTubeAnalizer.App.authorize;
 
@@ -48,7 +47,9 @@ public final class YoutubeInteractionService {
     
     private static final List<String> SCOPES =
             Arrays.asList( YouTubeScopes.YOUTUBE_READONLY );
-
+    
+    private static YouTube youtube;
+    
     /**
      * Parts of general data info set which can be fetched from Youtube service
      */
@@ -63,8 +64,15 @@ public final class YoutubeInteractionService {
             System.exit(1);
         }
     }
+    
     private YoutubeInteractionService ()
     {
+        try {
+            youtube = getYouTubeService();
+        }
+        catch ( IOException e ) {
+            e.printStackTrace();
+        }
     }
     
     private static class YoutubeInteractionServiceHolder {
@@ -92,11 +100,9 @@ public final class YoutubeInteractionService {
     // При слабом инете: connect timed out
     public List<Channel> getChannels(String request)
     {
-        YouTube youtube;
         List<Channel> list = new ArrayList<>();
 
         try {
-            youtube = getYouTubeService();
 
             YouTube.Channels.List
                     channelsListByUsernameRequest =
@@ -111,12 +117,94 @@ public final class YoutubeInteractionService {
         }
     }
     
-    public void getVideos(YouTubeAnalizer.Entity.Channel channel)
-    {
+    private final static int MAX_RESULTS = 50;
+    private final static int INIT_CAPACITY = 1000;
     
+    private static HashMap<String, String> getVideoParams = new HashMap<>();
+    
+    static {
+        getVideoParams.put("part", "id,snippet");
+        getVideoParams.put("maxResults", MAX_RESULTS + "");
+        getVideoParams.put("type", "video");
+        // parameters.put("order", "date");
+        // parameters.put("q", channel.getChannelId());
+    }
+    
+    /**
+     * Get video IDs for single channel
+     */
+    public List<SearchResult> getVideos (
+            YouTubeAnalizer.Entity.Channel channel,
+            String pageToken,
+            Integer step,
+            ArrayList<SearchResult> acc)
+    throws IOException
+    {
+        List<SearchResult> results;
+        Integer totalItems = 0;
+    
+        if ( acc == null ) { acc = new ArrayList<>( INIT_CAPACITY ); }
+    
+        if ( step == null ) { step = 0; }
+    
+        getVideoParams.put( "pageToken", pageToken );
+        getVideoParams.put( "channelId", channel.getChannelId() );
+        
+        YouTube.Search.List
+                searchListByKeywordRequest =
+                youtube.search().list( getVideoParams.get( "part" ).toString() );
+    
+        if ( getVideoParams.containsKey( "maxResults" ) ) {
+            searchListByKeywordRequest.setMaxResults( Long.parseLong( getVideoParams.get( "maxResults" ).toString() ) );
+        }
+    
+        if ( getVideoParams.containsKey( "q" ) && getVideoParams.get( "q" ) != "" ) {
+            searchListByKeywordRequest.setQ( getVideoParams.get( "q" ).toString() );
+        }
+    
+        if ( getVideoParams.containsKey( "order" ) && getVideoParams.get( "order" ) != "" ) {
+            searchListByKeywordRequest.setOrder( getVideoParams.get( "order" ).toString() );
+        }
+    
+        if ( getVideoParams.containsKey( "channelId" ) && getVideoParams.get( "channelId" ) != "" ) {
+            searchListByKeywordRequest.setChannelId( getVideoParams.get( "channelId" ).toString() );
+        }
+    
+        if ( getVideoParams.containsKey( "pageToken" ) && getVideoParams.get( "pageToken" ) != "" &&
+             getVideoParams.get( "pageToken" ) != null )
+        {
+            searchListByKeywordRequest.setPageToken( getVideoParams.get( "pageToken" ).toString() );
+        }
+    
+        // Restrict the search results to only include videos. See:
+        // https://developers.google.com/youtube/v3/docs/search/list#type
+        if ( getVideoParams.containsKey( "type" ) && getVideoParams.get( "type" ) != "" ) {
+            searchListByKeywordRequest.setType( getVideoParams.get( "type" ).toString() );
+        }
+    
+        // To increase efficiency, only retrieve the fields that the application uses.
+        // "items(id/kind,id/videoId,snippet/title,snippet/thumbnails/default/url)"
+        searchListByKeywordRequest.setFields( "items(id/videoId),nextPageToken,pageInfo(totalResults)" );
+    
+        try {
+            SearchListResponse response = searchListByKeywordRequest.execute();
+         
+            totalItems = response.getPageInfo().getTotalResults();
+            
+            results = response.getItems();
+            acc.addAll( results );
+        
+            if ( MAX_RESULTS * ++step < totalItems ) {
+                getVideos( channel, response.getNextPageToken(), step, acc );
+            }
+        }
+        catch ( Exception e ) {
+            e.printStackTrace();
+        }
+    
+        return acc;
     }
 
- 
 
     public ArrayList<YouTubeAnalizer.Entity.Channel> mapChannels(List<Channel> channels)
     {

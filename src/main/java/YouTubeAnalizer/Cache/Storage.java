@@ -268,7 +268,7 @@ final public class Storage {
         ArrayList<Node> nodesToDrop = nodes.stream().filter( Node::isNotRelevant ).collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
 
         if ( nodesToDrop != null )
-            nodesToDrop.stream().forEach( Storage.getInstance()::removeNode );
+            nodesToDrop.parallelStream().forEach( Storage.getInstance()::removeNode );
     }
 
     /**

@@ -5,10 +5,14 @@ import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
+import com.google.api.services.youtube.model.SearchResult;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
@@ -107,9 +111,55 @@ public class RequestService
         return futureStream;
     }
     
+    /**
+     * todo
+     * взять число каментов по видео
+     * скорей всего, возвращает объект
+     */
+    private static int getVideoInfo(SearchResult video)
+    {
+    
+        return 0;
+    }
+   
     private static CompletableFuture<Stream<Channel>> getChannelsWide(String request) throws Exception
     {
-        throw new Exception( "Not implemented" );
+        getChannels(request).thenApplyAsync( channelStream1 -> {
+            
+            channelStream1.forEach( channel -> {
+                try {
+                    // example: results.get( 0 ).getId().getVideoId(): String
+                    List<SearchResult>
+                            res =
+                            youtubeInteractionService.getVideos( channel, null, null, null );
+                    
+                    // todo
+                    // создать поток Rx - кинуть запрос на каждое видео (получить количество каментов)
+                    // редуцировать, чтобы получить сумму
+                    // CompletableFuture
+                    // res.parallelStream()
+//                    Observable.fromIterable( res )
+//                              .flatMap(
+//                                      video -> Observable.create( emitter -> emitter.onNext( getVideoInfo( video ) ) )
+//                                      );
+                    
+                    
+                }
+                catch ( IOException e ) {
+                    // todo
+                    // перенаправлять в поток ошибок
+                    e.printStackTrace();
+                }
+            } );
+            
+            return null;
+        } );
+        
+        
+        
+        
+        
+        return null;
 //        CompletableFuture<Stream<?>> videoStream = CompletableFuture.supplyAsync( () -> {
 //            return 1;
 //        } );

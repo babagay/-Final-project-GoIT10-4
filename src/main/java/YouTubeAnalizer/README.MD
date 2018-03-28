@@ -1,4 +1,6 @@
  [todo]
+ При обработке запроса зависает программа, задача не вынесена в отдельный поток
+ Программа не смогла создать кеш по указанному пути: files/cache3/
 Можно сделать окно Help  с инструкцией
 Запоминать выбор из списка
 окно с краткой инструкцией и [issues] 
@@ -9,12 +11,17 @@
 Создать единый канал ошибок
 [!] ConcurrentSkipListSet - видимо, более эффективная структура (по сравнению с synchronizedSortedSet), из которой можно получить и Set
           *      или Map
-          
+Кешировать флаг, показывающий, вычислено ли количество каментов    
           
 [!]
  время работы апи-запроса д.б. 10 сек
  
- 
+ UCEl0qh9X3kuL1RdFHng497Q
+ UCs6Agc6DvG7dZ8X4wZiGR1A - poznavatelnoeTV
+ UCk6UxHjd-UgRRhZn7lWTn7w - Кунгуров
+ UC5Cku3OvCui8iljqLcWxQmQ
+ UCDMWzYD1bv21ra2DlA6u1VQ
+ UCoF75_qbxjdhzo2z3ww3Evw - каскад
  UCYfdidRxbB8Qhf0Nx7ioOYw
  UCYfdidRxbB8Qhf0Nx7ioOYw,UClgRkhTL3_hImCAmdLfDE4g
  UCYfdidRxbB8Qhf0Nx7ioOYw,UClgRkhTL3_hImCAmdLfDE4g,UC-9-kyTW8ZkZNDHQJ6FgpwQ

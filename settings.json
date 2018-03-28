@@ -1,1 +1,7 @@
-{"expirationTime":8000,"useCache":true,"showRequestDuration":true,"cacheDirectory":"D:\\projects\\YouTube-analizer","cacheFilePath":"D:\\projects\\YouTube-analizer\\storage.json"}
+{
+  "expirationTime": 8000,
+  "useCache": false,
+  "showRequestDuration": true,
+  "cacheDirectory": "D:\\projects\\YouTube-analizer",
+  "cacheFilePath": "storage.json"
+}
