@@ -95,11 +95,17 @@ public class SearchActions implements Initializable
                 shortInfoRequest = true;
                 break;
             case GET_SINGLE_CHANNEL_WIDE_INFO_REQUEST:
-                requestFiltered = request.getText();
+                requestFiltered = request.getText().split( "," )[0];
                 shortInfoRequest = false;
                 break;
             case GET_TWO_CHANNEL_WIDE_INFO_REQUEST:
                 requestFiltered = request.getText();
+                textArr = request.getText().split( "," );
+                try {
+                    requestFiltered = textArr[0] + "," + textArr[1];
+                } catch ( Throwable e ){
+                    e.printStackTrace();
+                }
                 shortInfoRequest = false;
                 break;
             case GET_MULTI_CHANNEL_WIDE_INFO_REQUEST:
@@ -109,7 +115,7 @@ public class SearchActions implements Initializable
         }
     
         startRequestTime = System.currentTimeMillis();
-    
+
         if ( shortInfoRequest ) {
             RequestService.get( requestFiltered, this::callback );
         }

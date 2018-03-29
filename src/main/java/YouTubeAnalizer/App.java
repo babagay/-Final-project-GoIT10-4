@@ -90,7 +90,10 @@ public class App extends ParticleApplication
 
         stage.setOnHiding( event -> {
             System.out.println("Application is closing...");
+
             CacheService.saveStorage();
+
+            RequestService.shutdownPool();
         } );
     }
 

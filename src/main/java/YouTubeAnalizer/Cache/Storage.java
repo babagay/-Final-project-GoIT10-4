@@ -380,20 +380,26 @@ final public class Storage {
      */
     void removeNode (Node node)
     {
-        String request = null;
-        nodes.removeIf( node1 -> node1.request.equals( node.request ) );
-        try {
-            request =
-                    repository.requests.parallelStream()
-                                       .filter( request1 -> request1.equals( node.request ) )
-                                       .findFirst()
-                                       .orElseGet( null );
-        }
-        catch ( Throwable t ) {
-            t.printStackTrace();
-        }
-    
-        if ( request != null ) { repository.requests.remove( request ); }
+        String request = node.request;
+
+        nodes.remove( node );
+
+        //nodes.removeIf( node1 -> node1.request.equals( node.request ) );
+
+//        try {
+//            request =
+//                    repository.requests.parallelStream()
+//                                       .filter( request1 -> request1.equals( node.request ) )
+//                                       .findFirst()
+//                                       .orElseGet( null );
+//        }
+//        catch ( Throwable t ) {
+//            t.printStackTrace();
+//        }
+//
+//        if ( request != null ) { repository.requests.remove( request ); }
+
+        repository.requests.remove( request );
     }
 
     void removeChannel(Channel channel)

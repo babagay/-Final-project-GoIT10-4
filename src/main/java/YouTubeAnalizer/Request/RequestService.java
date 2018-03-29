@@ -5,19 +5,23 @@ import YouTubeAnalizer.Cache.CacheService;
 import YouTubeAnalizer.Entity.Channel;
 import YouTubeAnalizer.Settings.SettingsService;
 import com.gluonhq.particle.application.Particle;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.ResourceId;
 import com.google.api.services.youtube.model.SearchResult;
-import io.reactivex.Flowable;
+import com.google.api.services.youtube.model.Video;
+import com.google.api.services.youtube.model.VideoListResponse;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import static YouTubeAnalizer.API.YoutubeInteractionService.getYouTubeService;
 
 public class RequestService
 {
@@ -28,6 +32,10 @@ public class RequestService
     public static ObservableEmitter<ArrayList<Channel>> channelStreamer;
 
     public static Particle application = null;
+
+    private final static int POOL_CAPACITY = 10_000;
+
+    private static ThreadPoolExecutor requestPool = new ThreadPoolExecutor( 4, POOL_CAPACITY, 60L, TimeUnit.MINUTES, new ArrayBlockingQueue<>( POOL_CAPACITY ), Executors.defaultThreadFactory() );
 
     // todo
     // создать свой пул.
@@ -66,6 +74,11 @@ public class RequestService
         return null;
     }
 
+    public static void shutdownPool()
+    {
+        requestPool.shutdown();
+    }
+
     /**
      * Get channels from cache (Optional wrapper)
      */
@@ -81,7 +94,7 @@ public class RequestService
                 .supplyAsync( () -> {
                             // worker-1
                             return youtubeInteractionService.getChannels( request );
-                        }, pool
+                        }, requestPool
                 )
                 // [?] Почему не работает код: return youtubeInteractionService.mapChannels( w );
                 .thenComposeAsync( w -> {
@@ -90,7 +103,8 @@ public class RequestService
                                 // worker-2
                                 return youtubeInteractionService.mapChannels( w ).stream();
                             } );
-                        }
+                        },
+                        requestPool
                 )
                 .whenComplete( (result, throwable) -> {
                             // worker-2
@@ -98,7 +112,7 @@ public class RequestService
                                 // OK - result is got
                             }
                             else {
-                                System.out.println("error has been occurred during channel getting");
+                                System.out.println( "error has been occurred during channel getting" );
                                 throw new RuntimeException( throwable );
                             }
                         }
@@ -115,56 +129,131 @@ public class RequestService
      * todo
      * взять число каментов по видео
      * скорей всего, возвращает объект
+     * System.out.println(response.getItems().get( 0 ).getStatistics().getCommentCount());
      */
-    private static int getVideoInfo(SearchResult video)
+    private static List<Video> getVideoInfo(String videoId)
+    throws IOException
     {
-    
-        return 0;
+        YouTube youtube = getYouTubeService();
+        VideoListResponse response = null;
+        java.util.List<Video>  result = null;
+
+        try {
+            HashMap<String, String> parameters = new HashMap<>();
+            parameters.put("part", "statistics");
+            parameters.put("id", videoId);
+
+            YouTube.Videos.List videosListByIdRequest = youtube.videos().list(parameters.get("part").toString());
+            if (parameters.containsKey("id") && parameters.get("id") != "") {
+                videosListByIdRequest.setId(parameters.get("id").toString());
+            }
+
+            videosListByIdRequest.setFields( "items(statistics/commentCount)" );
+
+            videosListByIdRequest.setMaxResults( 50L );
+
+             response = videosListByIdRequest.execute();
+
+             result = response.getItems();
+
+        } catch ( Exception e ){
+            e.printStackTrace();
+        }
+
+        return result;
     }
-   
-    private static CompletableFuture<Stream<Channel>> getChannelsWide(String request) throws Exception
+
+    private static CompletableFuture<List<Channel>> getChannelsWide(String request)
     {
-        getChannels(request).thenApplyAsync( channelStream1 -> {
-            
-            channelStream1.forEach( channel -> {
-                try {
-                    // example: results.get( 0 ).getId().getVideoId(): String
-                    List<SearchResult>
-                            res =
-                            youtubeInteractionService.getVideos( channel, null, null, null );
-                    
-                    // todo
-                    // создать поток Rx - кинуть запрос на каждое видео (получить количество каментов)
-                    // редуцировать, чтобы получить сумму
-                    // CompletableFuture
-                    // res.parallelStream()
-//                    Observable.fromIterable( res )
-//                              .flatMap(
-//                                      video -> Observable.create( emitter -> emitter.onNext( getVideoInfo( video ) ) )
-//                                      );
-                    
-                    
-                }
-                catch ( IOException e ) {
-                    // todo
-                    // перенаправлять в поток ошибок
-                    e.printStackTrace();
-                }
+        final AtomicReference<CountDownLatch> latchChannelList = new AtomicReference<>();
+        final AtomicReference<CountDownLatch> latchIdSequences = new AtomicReference<>();
+        final AtomicReference<List<Channel>> resultChannels = new AtomicReference<>();
+
+        resultChannels.set( new ArrayList<>(10) );
+
+        return getChannels( request ).thenComposeAsync( channelStream1 -> {
+
+            ArrayList<Channel> list = channelStream1.collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
+
+            latchChannelList.set( new CountDownLatch( list.size() ) );
+
+            list.forEach( channel -> {
+
+                AtomicLong videoCommentNumber = new AtomicLong();
+
+                requestPool.execute( () -> {
+
+                    try {
+                        List<SearchResult> videoList = youtubeInteractionService.getVideos( channel, null, null, null );
+                        StringJoiner joiner = new StringJoiner( "," );
+
+                        ArrayList<String> batchList = new ArrayList<>();
+
+                        int u = 0;
+                        for ( int i = 0; i < videoList.size(); i++ ) {
+                            if ( u++ < 50 ) {
+                                joiner.add( videoList.get( i ).getId().getVideoId() );
+                            }
+                            else {
+                                batchList.add( joiner.toString() );
+                                joiner = new StringJoiner( "," );
+                                u = 0;
+                            }
+                        }
+
+                        latchIdSequences.set( new CountDownLatch( batchList.size() ) );
+
+                        batchList.stream().forEach( idSequence -> requestPool.execute( () -> {
+
+                            try {
+                                int sequenceCommentNumber = getVideoInfo( idSequence ).stream()
+                                        .map( item -> item.getStatistics()
+                                                .getCommentCount() )
+                                        .map( number -> number.intValue() )
+                                        .reduce( 0, (a, b) -> a + b );
+
+                                videoCommentNumber.set( videoCommentNumber.get() + sequenceCommentNumber );
+
+                                latchIdSequences.get().countDown();
+
+                            } catch ( IOException e ) {
+                                e.printStackTrace();
+                            }
+                        } ) );
+
+                        latchIdSequences.get().await();
+
+                        channel.setTotalCommentsNumber( videoCommentNumber.get() );
+
+                        resultChannels.get().add( channel );
+
+                        latchChannelList.get().countDown();
+
+                    } catch ( Throwable e ) {
+                        // todo
+                        // в единый поток
+                        e.printStackTrace();
+                    }
+                } );
             } );
-            
-            return null;
-        } );
-        
-        
-        
-        
-        
-        return null;
-//        CompletableFuture<Stream<?>> videoStream = CompletableFuture.supplyAsync( () -> {
-//            return 1;
-//        } );
+
+            try {
+                latchChannelList.get().await();
+            } catch ( InterruptedException e ) {
+                e.printStackTrace();
+            }
+
+            return CompletableFuture.supplyAsync( () -> resultChannels.get() );
+
+        }, requestPool )
+                .exceptionally( throwable -> {
+                    System.out.println( throwable.getMessage() );
+                    throwable.printStackTrace();
+                    return null;
+                } );
     }
- 
+
+    // можно запускать в отдельном потоке
     public static void get(String request, Consumer<ArrayList<Channel>> callback)
     {
         Observable.create(
@@ -220,12 +309,7 @@ public class RequestService
                 );
     }
     
-    /**
-     * todo
-     * взять все видео канала
-     * создать отдельный запрос на каждый видос канала, узнать количество каментов
-     * выполнить reduce
-     */
+
     public static void getWide (String request, Consumer<ArrayList<Channel>> callback)
     {
         Optional<ArrayList<Channel>> cachedChannels = getCachedChannelsOpt( request );
@@ -238,7 +322,11 @@ public class RequestService
             
             }
             else {
-                getChannelsWide( request );
+                getChannelsWide( request ).whenCompleteAsync( (channelList, throwable) -> {
+                    if (throwable == null){
+                        callback.accept( (ArrayList<Channel>) channelList );
+                    }
+                }, requestPool );
             }
         }
         catch ( Throwable t ) {
