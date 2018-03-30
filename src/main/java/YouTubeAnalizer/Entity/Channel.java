@@ -5,6 +5,8 @@ import javafx.beans.property.SimpleStringProperty;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class Channel implements Comparable<Channel>, Serializable {
@@ -68,8 +70,20 @@ public class Channel implements Comparable<Channel>, Serializable {
     /**
      * Набор видео
      */
-    Set<Video> videos;
-
+    transient Set<Video> videos;
+    
+    transient List<String> videoIds = new ArrayList<>( 100 );
+    
+    public void setVideoIds (List<String> videoIds)
+    {
+        this.videoIds = videoIds;
+    }
+    
+    public List<String> getVideoIds ()
+    {
+        return videoIds;
+    }
+    
     boolean needToBeRestoredFromCahce = false;
 
     /**

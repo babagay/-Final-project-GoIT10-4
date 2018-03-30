@@ -14,11 +14,13 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static YouTubeAnalizer.API.YoutubeInteractionService.getYouTubeService;
@@ -162,7 +164,13 @@ public class RequestService
 
         return result;
     }
-
+    
+    /**
+     *  попробовать
+     *  оставить цепочку CompletableFuture или создать цепочку Rx или просто реализовать готовый стрим
+     *  канал - видео id - batches (сохранить в канал) - processing (future task, напр) в отдельном потоке
+     *  - ожидание результата - упаковка в лист
+     */
     private static CompletableFuture<List<Channel>> getChannelsWide(String request)
     {
         final AtomicReference<CountDownLatch> latchChannelList = new AtomicReference<>();
@@ -181,25 +189,32 @@ public class RequestService
 
                 AtomicLong videoCommentNumber = new AtomicLong();
 
+                //----
+                
+//                Observable.fromIterable( list )
+//                          .map( ch -> {
+//                              ch.setVideoIds( getVideoIdsByChannel(ch) );
+//                              return ch;
+//                          })
+//                          .map(  RequestService::splitOnBatches );
+                
+                
+                
+                //---
+                
+                
+                
+                
+                
+                
+                
+                
                 requestPool.execute( () -> {
 
                     try {
                         List<SearchResult> videoList = youtubeInteractionService.getVideos( channel, null, null, null );
-                        StringJoiner joiner = new StringJoiner( "," );
-
-                        ArrayList<String> batchList = new ArrayList<>();
-
-                        int u = 0;
-                        for ( int i = 0; i < videoList.size(); i++ ) {
-                            if ( u++ < 50 ) {
-                                joiner.add( videoList.get( i ).getId().getVideoId() );
-                            }
-                            else {
-                                batchList.add( joiner.toString() );
-                                joiner = new StringJoiner( "," );
-                                u = 0;
-                            }
-                        }
+                        
+                        ArrayList<String> batchList = splitOnBatches( videoList );
 
                         latchIdSequences.set( new CountDownLatch( batchList.size() ) );
 
@@ -251,6 +266,37 @@ public class RequestService
                     throwable.printStackTrace();
                     return null;
                 } );
+    }
+    
+    private static List<String> getVideoIdsByChannel(Channel channel) throws IOException
+    {
+        return getVideosByChannel( channel ).parallelStream().map( item -> item.getId().getVideoId() )
+                                     .collect( ArrayList::new, ArrayList::add, ArrayList::addAll );
+    }
+    
+    private static List<SearchResult> getVideosByChannel(Channel channel) throws IOException
+    {
+        return youtubeInteractionService.getVideos( channel, null, null, null );
+    }
+    
+    private static ArrayList<String> splitOnBatches(List<SearchResult> videoList)
+    {
+        ArrayList<String> batchList = new ArrayList<>();
+        StringJoiner joiner = new StringJoiner( "," );
+        int u = 0;
+        
+        for ( int i = 0; i < videoList.size(); i++ ) {
+            if ( u++ < 50 ) {
+                joiner.add( videoList.get( i ).getId().getVideoId() );
+            }
+            else {
+                batchList.add( joiner.toString() );
+                joiner = new StringJoiner( "," );
+                u = 0;
+            }
+        }
+        
+        return batchList;
     }
 
     // можно запускать в отдельном потоке
