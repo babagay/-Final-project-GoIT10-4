@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public class Channel implements Comparable<Channel>, Serializable {
 
@@ -73,17 +74,9 @@ public class Channel implements Comparable<Channel>, Serializable {
     transient Set<Video> videos;
     
     transient List<String> videoIds = new ArrayList<>( 100 );
-    
-    public void setVideoIds (List<String> videoIds)
-    {
-        this.videoIds = videoIds;
-    }
-    
-    public List<String> getVideoIds ()
-    {
-        return videoIds;
-    }
-    
+
+    transient ArrayList<String> videoIdBatchesList = new ArrayList<>( 50 );
+
     boolean needToBeRestoredFromCahce = false;
 
     /**
@@ -110,6 +103,36 @@ public class Channel implements Comparable<Channel>, Serializable {
         this.expirationDate = expirationDate;
     }
 
+    public Channel setVideoIds (List<String> videoIds)
+    {
+        this.videoIds = videoIds;
+        return this;
+    }
+
+    public List<String> getVideoIds ()
+    {
+        return videoIds;
+    }
+
+    public Channel splitVideoIdsOnBatches()
+    {
+        StringJoiner joiner = new StringJoiner( "," );
+        int u = 0;
+
+        for ( int i = 0; i < videoIds.size(); i++ ) {
+            if ( u++ < 50 ) {
+                joiner.add( videoIds.get( i ) );
+            }
+            else {
+                videoIdBatchesList.add( joiner.toString() );
+                joiner = new StringJoiner( "," );
+                u = 0;
+            }
+        }
+
+        return this;
+    }
+
     /**
      * Extra deserialization
      */
@@ -134,6 +157,11 @@ public class Channel implements Comparable<Channel>, Serializable {
     {
         return null;
 //        return creationDate.get();
+    }
+
+    public ArrayList<String> getVideoIdBatchesList()
+    {
+        return videoIdBatchesList;
     }
 
     public long getFollowersNumber()

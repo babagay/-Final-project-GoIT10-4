@@ -37,16 +37,10 @@ public class RequestService
 
     private final static int POOL_CAPACITY = 10_000;
 
-    private static ThreadPoolExecutor requestPool = new ThreadPoolExecutor( 4, POOL_CAPACITY, 60L, TimeUnit.MINUTES, new ArrayBlockingQueue<>( POOL_CAPACITY ), Executors.defaultThreadFactory() );
+    private static ThreadPoolExecutor requestPool = new ThreadPoolExecutor( 100, POOL_CAPACITY, 60L, TimeUnit.MINUTES, new ArrayBlockingQueue<>( POOL_CAPACITY ), Executors.defaultThreadFactory() );
 
-    // todo
-    // создать свой пул.
-    // Однако, здесь https://allegro.tech/2014/10/async-rest.html
-    // рекомендуют юзать RxJersey https://jersey.github.io/#rx-client.java8
-    // https://stackoverflow.com/questions/39469435/working-with-jersey-client-in-rx-style
-    // pool = Executors.newFixedThreadPool( 4 );
-    public static ForkJoinPool pool = ForkJoinPool.commonPool();
-
+    // private static Executor requestPool = Executors.newFixedThreadPool( 4 );
+    // private static Executor requestPool = ForkJoinPool.commonPool();
 
     public static void init(Particle app)
     {
@@ -103,7 +97,7 @@ public class RequestService
                             // worker-1
                             return CompletableFuture.supplyAsync( () -> {
                                 // worker-2
-                                return youtubeInteractionService.mapChannels( w ).stream();
+                                return youtubeInteractionService.mapChannels( w ).parallelStream();
                             } );
                         },
                         requestPool
@@ -128,10 +122,7 @@ public class RequestService
     }
     
     /**
-     * todo
      * взять число каментов по видео
-     * скорей всего, возвращает объект
-     * System.out.println(response.getItems().get( 0 ).getStatistics().getCommentCount());
      */
     private static List<Video> getVideoInfo(String videoId)
     throws IOException
@@ -166,10 +157,79 @@ public class RequestService
     }
     
     /**
-     *  попробовать
-     *  оставить цепочку CompletableFuture или создать цепочку Rx или просто реализовать готовый стрим
-     *  канал - видео id - batches (сохранить в канал) - processing (future task, напр) в отдельном потоке
-     *  - ожидание результата - упаковка в лист
+     * Альтернативная версия метода getChannelsWide()
+     */
+    private static CompletableFuture<List<Channel>> getChannelsWideAlter(String request)
+    {
+        return getChannels( request ).thenComposeAsync( channelStream1 -> {
+
+            ArrayList<Channel> list = channelStream1
+                    .map( channel1 -> setChannelVideoIds( channel1 ) )
+                    .map( channel2 -> channel2.splitVideoIdsOnBatches() )
+                    .map( channel3 -> calculateChannelVideosCommentTotal( channel3 ) )
+                    .collect( ArrayList<Channel>::new, ArrayList::add, ArrayList::addAll );
+
+            return CompletableFuture.supplyAsync( () -> list );
+        });
+    }
+
+    /**
+     * todo
+     * в отдельном потоке
+     */
+    private static Channel setChannelVideoIds(Channel channel)
+    {
+        try {
+            return channel.setVideoIds( getVideoIdsByChannel(channel) );
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        }
+
+        return channel;
+    }
+
+    /**
+     * Общее количество комментариев всех видео канала
+     */
+    private static Channel calculateChannelVideosCommentTotal(Channel channel)
+    {
+        Integer totalComments = channel.getVideoIdBatchesList().parallelStream()
+                .map( RequestService::calculateCommentNumberForSequence )
+                .reduce( 0, (a, b) -> a + b );
+
+        channel.setTotalCommentsNumber( totalComments );
+
+        return channel;
+    }
+
+    /**
+     * Взять пачку видео и сосчетать количество каментов в ней
+     * todo
+     * Если делать в отдельном потоке каждый запрос, можно накидать потоков, которые складывают результаты в список
+     * и потом сделать reduce.
+     * Потоки можно складывать в очередь и запомнить ее размер.
+     * После этого отправить очередь на исполнение
+     * и мониторить количество элементов в списке результатов. Когда оно будет равно размеру очереди, выполнить reduce.
+     */
+    private static int calculateCommentNumberForSequence(String sequence)
+    {
+        int sequenceCommentNumber = 0;
+
+        try {
+            sequenceCommentNumber = getVideoInfo(sequence).parallelStream()
+                    .map( video -> video.getStatistics().getCommentCount() )
+                    .map( number -> number.intValue() )
+                    .reduce( 0, (a,b) -> a + b );
+
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        }
+
+        return sequenceCommentNumber;
+    }
+
+    /**
+     * Первая реализация метода вычисления общего числа комментариев под всеми видео канала
      */
     private static CompletableFuture<List<Channel>> getChannelsWide(String request)
     {
@@ -189,26 +249,6 @@ public class RequestService
 
                 AtomicLong videoCommentNumber = new AtomicLong();
 
-                //----
-                
-//                Observable.fromIterable( list )
-//                          .map( ch -> {
-//                              ch.setVideoIds( getVideoIdsByChannel(ch) );
-//                              return ch;
-//                          })
-//                          .map(  RequestService::splitOnBatches );
-                
-                
-                
-                //---
-                
-                
-                
-                
-                
-                
-                
-                
                 requestPool.execute( () -> {
 
                     try {
@@ -245,9 +285,7 @@ public class RequestService
                         latchChannelList.get().countDown();
 
                     } catch ( Throwable e ) {
-                        // todo
-                        // в единый поток
-                        e.printStackTrace();
+                        e.printStackTrace(); // в единый поток ошибок
                     }
                 } );
             } );
@@ -364,8 +402,7 @@ public class RequestService
                 // Взяли из кеша
             
                 callback.accept( cachedChannels.get() );
-            
-            
+
             }
             else {
                 getChannelsWide( request ).whenCompleteAsync( (channelList, throwable) -> {

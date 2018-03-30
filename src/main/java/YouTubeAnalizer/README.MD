@@ -1,5 +1,6 @@
  [todo]
  Ситуация, когда канал есть в кеше, но не выполнялся комплексный запрос каментов
+ оставить 2 опции в выпадающем списке
  При обработке запроса зависает программа, задача не вынесена в отдельный поток
  Программа не смогла создать кеш по указанному пути: files/cache3/
 Можно сделать окно Help  с инструкцией
@@ -20,14 +21,46 @@
  UCEl0qh9X3kuL1RdFHng497Q
  UCs6Agc6DvG7dZ8X4wZiGR1A - poznavatelnoeTV
  UCk6UxHjd-UgRRhZn7lWTn7w - Кунгуров
- UC5Cku3OvCui8iljqLcWxQmQ
- UCDMWzYD1bv21ra2DlA6u1VQ
+ UC5Cku3OvCui8iljqLcWxQmQ - Идущий
+ UCDMWzYD1bv21ra2DlA6u1VQ - сундаков
  UCoF75_qbxjdhzo2z3ww3Evw - каскад
 
 UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A,UCNM3oQVp0yc58bs23dS_jGg,UCsTcErHg8oDvUnTzoqsYeNw,UCupvZG-5ko_eiXAupbDfxWw,UCJ5v_MCY6GNUBTO8-D3XoAg
 				 
 				Кунгуров       101_395  109_622  110_301  110_006
 				Познавательное 285_174  284_964  284_967
+				
+[Сравнительное тестирование реализаций метода подсчета общего числа комментариев]
+
+UCNM3oQVp0yc58bs23dS_jGg :: getChannelsWideAlter ::	веб рассказ :: 687 видосов :: 167_430 каментов :: 8сек
+UCNM3oQVp0yc58bs23dS_jGg :: getChannelsWideAlter ::	веб рассказ :: 687 видосов :: 167_430 каментов :: 7сек
+UCNM3oQVp0yc58bs23dS_jGg :: getChannelsWide      ::	веб рассказ :: 687 видосов :: 149_596 каментов :: 8сек
+
+
+UCk6UxHjd-UgRRhZn7lWTn7w :: getChannelsWideAlter ::	Кунгуров :: 529 видосов :: 110_213 каментов :: 6сек
+UCk6UxHjd-UgRRhZn7lWTn7w :: getChannelsWide      ::	Кунгуров :: 529 видосов ::  94_510 каментов :: 5сек
+
+
+UC5Cku3OvCui8iljqLcWxQmQ :: getChannelsWideAlter ::	Идущий :: 161 видос ::  11_688 каментов :: 1сек
+UC5Cku3OvCui8iljqLcWxQmQ :: getChannelsWide      ::	Идущий :: 161 видос ::  11_688 каментов :: 2сек
+
+UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWideAlter ::	poznavatelnoeTV :: 2745 видос ::  282_520 каментов :: 12сек
+UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWide      ::	poznavatelnoeTV :: 2745 видос ::  282_520 каментов :: 12сек
+
+Идущий + Кунгуров :: getChannelsWideAlter :: 95_964 :: 11_688 :: 6сек
+Идущий + Кунгуров :: getChannelsWide :: 110_213 :: 25_943 :: 6сек
+
+Идущий + Кунгуров + веб рассказ :: getChannelsWideAlter :: 11_688 :: 110_219 :: 167_430 :: 8сек
+Идущий + Кунгуров + веб рассказ :: getChannelsWide :: неопределенно долгое время
+
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWideAlter :: 167_423 :: 22_473 :: 101_211 :: 282_520 :: 11 сек
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWideAlter :: 160_406 :: 22_474 :: 110_226 :: 282_522 :: 13 сек
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWideAlter :: 169_416 :: 31_484 :: 110_226 :: 282_523 :: 13 сек
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWide :: 22_474 :: 101_216 :: 140_463 :: 282_522 :: 11 sec
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWide :: 22_474 :: 101_216 :: 160_406 :: 282_522 :: 11 sec
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWide :: 18_531 ::  97_273 :: 156_463 :: 278_580 :: 11 sec
+UCDMWzYD1bv21ra2DlA6u1VQ,UCNM3oQVp0yc58bs23dS_jGg,UCk6UxHjd-UgRRhZn7lWTn7w,UCs6Agc6DvG7dZ8X4wZiGR1A :: getChannelsWide :: 31_484 :: 110_227 :: 169_416 :: 290_611 :: 10 sec
+
 
           
  [TableView]

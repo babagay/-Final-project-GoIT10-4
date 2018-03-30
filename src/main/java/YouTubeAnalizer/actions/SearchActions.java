@@ -61,7 +61,8 @@ public class SearchActions implements Initializable
     private final static int   GET_MULTI_CHANNEL_WIDE_INFO_REQUEST = 5;
     
     /**
-     * todo Валидация
+     * todo
+     * Валидация
      */
     @FXML
     protected void onRequestAction (ActionEvent event) throws Exception
@@ -85,7 +86,6 @@ public class SearchActions implements Initializable
                 try {
                     requestFiltered = textArr[0] + "," + textArr[1];
                 } catch ( Throwable e ){
-                    // todo
                     // бросать в канал ошибок
                     // throw new Exception( "invalid input" );
                 }
@@ -174,6 +174,7 @@ public class SearchActions implements Initializable
         setProgress( 0.0 );
     }
 
+    // thread pool
     private void initRequestString()
     {
         Task<Void> task = new Task<Void>() {
@@ -188,7 +189,8 @@ public class SearchActions implements Initializable
 
         new Thread( task ).start();
     }
-    
+
+    // thread pool
     private void sightRequestDuration ()
     {
         if ( settings.isShownRequestDuration() ) {
@@ -198,7 +200,7 @@ public class SearchActions implements Initializable
             Task<Void> task = new Task<Void>() {
                 
                 @Override
-                protected Void call () throws Exception
+                protected Void call ()
                 {
                     Platform.runLater( () -> {
                         
@@ -237,7 +239,7 @@ public class SearchActions implements Initializable
             {
                 setProgress( progress );
 
-                progress += 0.1;
+                progress += 0.01;
 
                 try
                 {
